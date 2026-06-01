@@ -1,0 +1,104 @@
+import { useSyncExternalStore } from 'react';
+import { DEFAULT_CONTENT, RC_CLUB_CONTENT } from '../content/emailContent';
+
+function freshState() {
+  return {
+    sections: {
+      hero: { status: 'pending', content: RC_CLUB_CONTENT.hero },
+      body: { status: 'pending', content: RC_CLUB_CONTENT.body },
+      amenities: { status: 'pending', content: RC_CLUB_CONTENT.amenities },
+    },
+    editingKey: null,
+  };
+}
+
+let state = freshState();
+const listeners = new Set();
+
+function notify() {
+  for (const l of listeners) l();
+}
+
+export function getRCClubState() {
+  return state;
+}
+
+function setSection(key, patch) {
+  state = {
+    ...state,
+    sections: {
+      ...state.sections,
+      [key]: { ...state.sections[key], ...patch },
+    },
+  };
+}
+
+export function acceptSection(key) {
+  setSection(key, { status: 'accepted' });
+  if (state.editingKey === key) state = { ...state, editingKey: null };
+  notify();
+}
+
+// Click-on-section toggle: pending → accepted, accepted → pending.
+// Used by the new static-icon UI in EmailPreview. Rejected/editing are no-ops.
+export function toggleAcceptSection(key) {
+  const current = state.sections[key]?.status;
+  if (current === 'pending') {
+    setSection(key, { status: 'accepted' });
+    notify();
+  } else if (current === 'accepted') {
+    setSection(key, { status: 'pending' });
+    notify();
+  }
+}
+
+export function rejectSection(key) {
+  setSection(key, { status: 'rejected', content: DEFAULT_CONTENT[key] });
+  if (state.editingKey === key) state = { ...state, editingKey: null };
+  notify();
+}
+
+export function startEditingSection(key) {
+  // If another section was already in editing state, drop it back to pending —
+  // only one section can be the active editor at a time.
+  if (state.editingKey && state.editingKey !== key) {
+    setSection(state.editingKey, { status: 'pending' });
+  }
+  setSection(key, { status: 'editing' });
+  state = { ...state, editingKey: key };
+  notify();
+}
+
+export function finishEditingSection(key) {
+  setSection(key, { status: 'accepted' });
+  state = { ...state, editingKey: null };
+  notify();
+}
+
+export function cancelEditing() {
+  // Bring section back to pending without altering content.
+  if (state.editingKey) {
+    setSection(state.editingKey, { status: 'pending' });
+  }
+  state = { ...state, editingKey: null };
+  notify();
+}
+
+export function setSectionContent(key, content) {
+  setSection(key, { content });
+  notify();
+}
+
+export function resetRCClubState() {
+  state = freshState();
+  notify();
+}
+
+function subscribe(l) {
+  listeners.add(l);
+  return () => listeners.delete(l);
+}
+
+export function useRCClubState() {
+  return useSyncExternalStore(subscribe, getRCClubState, getRCClubState);
+}
