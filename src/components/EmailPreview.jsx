@@ -24,8 +24,9 @@ function Section({ id, status, label, onEdit, children }) {
   const isEditing = status === 'editing';
   const interactive = status === 'pending' || status === 'editing' || status === 'accepted';
 
-  const borderColor = isEditing ? theme.color.success : theme.color.aiBlueAccent;
-  const surfaceTint = isEditing ? theme.color.successBg : theme.color.aiBlueBg;
+  // AI-suggested sections use RC Club purple; only the active edit state flips to green.
+  const borderColor = isEditing ? theme.color.success : '#7A4DD0';
+  const surfaceTint = isEditing ? theme.color.successBg : '#F3EFFC';
   const badgeBg = borderColor;
   const iconColor = borderColor;
 

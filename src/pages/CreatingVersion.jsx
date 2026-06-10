@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import Shell from '../components/Shell';
 import theme from '../theme';
 import { trackPageVisit, trackAIInteraction } from '../tracking/sessionTracker';
+import { generateRCClubVersion } from '../store/rcClubStore';
 
 // Screens 4 → 5 — "Creating your <audience> version".
 // A checklist whose steps complete one by one; when all are done it shows the
@@ -60,6 +61,8 @@ export default function CreatingVersion() {
 
   useEffect(() => {
     trackPageVisit('creating_version');
+    // Assemble the version now, pulling amenities from what the user added.
+    generateRCClubVersion();
   }, []);
 
   useEffect(() => {

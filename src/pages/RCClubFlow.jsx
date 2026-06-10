@@ -1,7 +1,8 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Shell from '../components/Shell';
 import EmailPreview from '../components/EmailPreview';
+import MicroSurvey from '../components/MicroSurvey';
 import theme from '../theme';
 import {
   trackPageVisit,
@@ -115,7 +116,7 @@ function SparkIcon() {
 
 function StatusPill({ status }) {
   const map = {
-    pending: { label: 'AI suggested', bg: theme.color.aiBlueBg, color: theme.color.primary },
+    pending: { label: 'AI suggested', bg: '#F1EAFB', color: '#7A4DD0' },
     accepted: { label: 'Accepted', bg: '#E7F4EC', color: theme.color.success },
     rejected: { label: 'Reverted to default', bg: '#F0F0F0', color: '#6E6E6E' },
     editing: { label: 'Editing…', bg: '#EAF1FB', color: theme.color.primary },
@@ -555,64 +556,6 @@ function PublishModal({ open, onCancel, onConfirm }) {
   );
 }
 
-// ──────── Micro-survey (research instrument) ────────
-
-function MicroSurvey({ onAnswer, onDismiss }) {
-  const [answered, setAnswered] = useState(null);
-  const options = [
-    { key: 'too-automated', label: 'Too automated' },
-    { key: 'just-right', label: 'Just right' },
-    { key: 'more-control', label: 'More control' },
-  ];
-  const handlePick = (opt) => {
-    setAnswered(opt.key);
-    onAnswer(opt.label);
-    setTimeout(onDismiss, 1200);
-  };
-  return (
-    <div
-      style={{ position: 'fixed', left: '50%', bottom: 28, transform: 'translateX(-50%)', zIndex: 90, background: '#FFFFFF', border: `1px solid ${theme.color.border}`, boxShadow: theme.shadow.overlay, borderRadius: theme.radius.xl, padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 14, whiteSpace: 'nowrap', maxWidth: 'calc(100vw - 32px)', animation: 'surveyRise 320ms cubic-bezier(0.2,0,0.2,1)' }}
-    >
-      <style>{`
-        @keyframes surveyRise { from { opacity: 0; transform: translate(-50%, 14px) } to { opacity: 1; transform: translate(-50%, 0) } }
-        @keyframes bellRing {
-          0%, 55%, 100% { transform: rotate(0deg) translateY(0); }
-          59% { transform: translateY(-3px) rotate(-15deg); }
-          64% { transform: rotate(13deg); }
-          69% { transform: rotate(-10deg); }
-          74% { transform: rotate(7deg); }
-          79% { transform: rotate(-4deg); }
-          84% { transform: rotate(2deg) translateY(0); }
-        }
-      `}</style>
-      <span
-        aria-hidden
-        style={{ fontSize: 20, display: 'inline-block', transformOrigin: '50% 12%', animation: 'bellRing 2.4s ease-in-out infinite' }}
-      >
-        🛎️
-      </span>
-      <div style={{ fontSize: 13, fontWeight: 500, color: theme.color.text, marginRight: 4 }}>How did that feel?</div>
-      <div style={{ display: 'flex', gap: 8 }}>
-        {options.map((opt) => {
-          const isChosen = answered === opt.key;
-          const isDimmed = answered && !isChosen;
-          return (
-            <button
-              key={opt.key}
-              disabled={!!answered}
-              onClick={() => handlePick(opt)}
-              style={{ background: isChosen ? theme.color.primary : '#FFFFFF', color: isChosen ? '#FFFFFF' : theme.color.text, border: `1px solid ${isChosen ? theme.color.primary : theme.color.borderStrong}`, padding: '7px 14px', borderRadius: theme.radius.pill, fontSize: 12.5, fontWeight: 500, cursor: answered ? 'default' : 'pointer', opacity: isDimmed ? 0.4 : 1, transition: `all ${theme.motion.fast}` }}
-            >
-              {opt.label}
-            </button>
-          );
-        })}
-      </div>
-      <button onClick={onDismiss} aria-label="Dismiss" style={{ background: 'transparent', border: 'none', color: theme.color.textMuted, fontSize: 16, cursor: 'pointer', marginLeft: 4, width: 22, height: 22 }}>×</button>
-    </div>
-  );
-}
-
 function Toast({ message, onDone }) {
   useEffect(() => {
     const t = setTimeout(onDone, 2200);
@@ -655,19 +598,23 @@ export default function RCClubFlow() {
   const [activeTab, setActiveTab] = useState('rc-club');
   const [publishing, setPublishing] = useState(false);
   const [showSurvey, setShowSurvey] = useState(false);
-  const [surveyShown, setSurveyShown] = useState(false);
   const [toast, setToast] = useState(null);
+  const surveyShownRef = useRef(false);
+
+  // Show the research micro-survey once per editor visit — fires as soon as the
+  // generated version is on screen (and earlier if they accept/edit/reject).
+  const triggerSurvey = () => {
+    if (surveyShownRef.current) return;
+    surveyShownRef.current = true;
+    setShowSurvey(true);
+  };
 
   useEffect(() => {
     trackPageVisit('rc_club_editor');
+    const t = setTimeout(triggerSurvey, 2200);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  // Show the research micro-survey once, after the first Accept/Edit/Reject.
-  const triggerSurvey = () => {
-    if (surveyShown) return;
-    setSurveyShown(true);
-    setTimeout(() => setShowSurvey(true), 600);
-  };
 
   const handleAccept = (key) => {
     trackAIInteraction('accept_section', { section: key });
@@ -824,7 +771,7 @@ export default function RCClubFlow() {
 
       {showSurvey && (
         <MicroSurvey
-          onAnswer={(label) => trackSurveyResponse('How did that feel?', label)}
+          onAnswer={(label) => trackSurveyResponse('RC Club version — how did that feel?', label)}
           onDismiss={() => setShowSurvey(false)}
         />
       )}

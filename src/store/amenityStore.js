@@ -195,6 +195,15 @@ export function getFeaturesByCategory(category) {
   return [...base, ...added];
 }
 
+// Added amenities formatted for the RC Club email's "Curate an Extraordinary
+// Stay" section, so the generated version reflects what the user discovered.
+export function getAddedAmenitiesForEmail() {
+  if (!state.discoveryComplete) return [];
+  return state.discovered
+    .filter((a) => a.added)
+    .map((a) => ({ title: a.name, body: a.description, image: a.image }));
+}
+
 function subscribe(l) {
   listeners.add(l);
   return () => listeners.delete(l);

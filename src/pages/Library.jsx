@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import Shell from '../components/Shell';
 import GuideAIModal from '../components/GuideAIModal';
 import ReviewAmenitiesModal from '../components/ReviewAmenitiesModal';
+import MicroSurvey from '../components/MicroSurvey';
 import theme from '../theme';
-import { trackPageVisit, trackClick } from '../tracking/sessionTracker';
+import { trackPageVisit, trackClick, trackSurveyResponse } from '../tracking/sessionTracker';
 import { getFeaturesByCategory, completeDiscovery, useAmenityState } from '../store/amenityStore';
 
 function PrimaryButton({ children, onClick, style }) {
@@ -367,6 +368,7 @@ export default function Library() {
   const [query, setQuery] = useState('');
   const [modal, setModal] = useState(null); // null | 'guide' | 'review' — amenity creation
   const [createOpen, setCreateOpen] = useState(false); // "Create New" dropdown sheet
+  const [showSurvey, setShowSurvey] = useState(false);
 
   useAmenityState(); // subscribe so the Library re-renders when amenities are added
   const propertyFeatures = getFeaturesByCategory('Property Features');
@@ -596,7 +598,15 @@ export default function Library() {
       {modal === 'review' && (
         <ReviewAmenitiesModal
           onCancel={() => setModal(null)}
-          onDone={() => { completeDiscovery(); setModal(null); }}
+          onDone={() => { completeDiscovery(); setModal(null); setShowSurvey(true); }}
+        />
+      )}
+
+      {/* Research micro-survey — fires every time the amenity flow completes */}
+      {showSurvey && (
+        <MicroSurvey
+          onAnswer={(label) => trackSurveyResponse('Amenity generation — how did that feel?', label)}
+          onDismiss={() => setShowSurvey(false)}
         />
       )}
     </Shell>

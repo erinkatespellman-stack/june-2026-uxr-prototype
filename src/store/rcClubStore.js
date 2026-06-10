@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from 'react';
 import { DEFAULT_CONTENT, RC_CLUB_CONTENT } from '../content/emailContent';
+import { getAddedAmenitiesForEmail } from './amenityStore';
 
 function freshState() {
   return {
@@ -91,6 +92,27 @@ export function setSectionContent(key, content) {
 
 export function resetRCClubState() {
   state = freshState();
+  notify();
+}
+
+// Generate a fresh RC Club version, sourcing the amenities section from the
+// amenities the user actually added in the discovery flow. Falls back to the
+// default RC Club amenities when none were added.
+export function generateRCClubVersion() {
+  state = freshState();
+  const items = getAddedAmenitiesForEmail();
+  if (items.length > 0) {
+    state = {
+      ...state,
+      sections: {
+        ...state.sections,
+        amenities: {
+          status: 'pending',
+          content: { title: 'Curate an Extraordinary Stay', items },
+        },
+      },
+    };
+  }
   notify();
 }
 
