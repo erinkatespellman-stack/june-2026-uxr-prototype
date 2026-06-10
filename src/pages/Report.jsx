@@ -1,6 +1,32 @@
 import React, { useEffect, useState } from 'react';
 import theme from '../theme';
-import { getSessionData, resetSession } from '../tracking/sessionTracker';
+import { getSessionData, resetSession, getAllSessions, clearAllSessions } from '../tracking/sessionTracker';
+
+function downloadFile(name, content, type) {
+  const blob = new Blob([content], { type });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = name;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function csvEscape(v) {
+  const s = String(v ?? '');
+  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}
+
+// Flatten every micro-survey answer across all stored sessions into a CSV report.
+function feedbackCSV(sessions) {
+  const rows = [['session_id', 'session_started', 'question', 'answer', 'answered_at']];
+  sessions.forEach((s) => {
+    (s.surveyResponses || []).forEach((r) => {
+      rows.push([s.sessionId, new Date(s.startedAt).toISOString(), r.question, r.answer, new Date(r.at).toISOString()]);
+    });
+  });
+  return rows.map((r) => r.map(csvEscape).join(',')).join('\n');
+}
 
 const PAGE_LABELS = {
   library: 'Communications hub',
@@ -30,6 +56,18 @@ function formatTime(ms) {
   const d = new Date(ms);
   return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 }
+
+const ghostBtnStyle = {
+  background: '#FFFFFF',
+  border: `1px solid ${theme.color.borderStrong}`,
+  borderRadius: theme.radius.md,
+  padding: '8px 14px',
+  fontSize: 13,
+  fontWeight: 500,
+  cursor: 'pointer',
+  fontFamily: 'inherit',
+  color: theme.color.text,
+};
 
 function Stat({ label, value, hint }) {
   return (
@@ -67,6 +105,9 @@ export default function Report() {
 
   const totalClicks = data.timeline.filter((e) => e.type === 'click').length;
   const totalAI = (data.aiInteractions || []).length;
+
+  const allSessions = getAllSessions();
+  const storedFeedback = allSessions.reduce((n, s) => n + (s.surveyResponses ? s.surveyResponses.length : 0), 0);
 
   return (
     <div
@@ -110,45 +151,58 @@ export default function Report() {
               Duration {formatDuration(data.durationSeconds)}
               <span style={{ margin: '0 8px', color: '#C8C8C8' }}>·</span>
               Live (refreshes every 2s)
+              <span style={{ margin: '0 8px', color: '#C8C8C8' }}>·</span>
+              {allSessions.length} session{allSessions.length === 1 ? '' : 's'} stored · {storedFeedback} feedback response{storedFeedback === 1 ? '' : 's'}
             </div>
           </div>
           <div className="no-print" style={{ display: 'flex', gap: 8 }}>
             <button
-              onClick={() => window.print()}
+              onClick={() => downloadFile(`uxr-feedback-${Date.now()}.csv`, feedbackCSV(getAllSessions()), 'text/csv;charset=utf-8')}
               style={{
-                background: '#FFFFFF',
-                border: `1px solid ${theme.color.borderStrong}`,
+                background: theme.color.primary,
+                border: 'none',
                 borderRadius: theme.radius.md,
                 padding: '8px 14px',
                 fontSize: 13,
-                fontWeight: 500,
+                fontWeight: 600,
                 cursor: 'pointer',
                 fontFamily: 'inherit',
-                color: theme.color.text,
+                color: '#FFFFFF',
               }}
             >
+              Download CSV
+            </button>
+            <button
+              onClick={() => downloadFile(`uxr-sessions-${Date.now()}.json`, JSON.stringify(getAllSessions(), null, 2), 'application/json')}
+              style={ghostBtnStyle}
+            >
+              Export JSON
+            </button>
+            <button onClick={() => window.print()} style={ghostBtnStyle}>
               Print
             </button>
             <button
               onClick={() => {
-                if (window.confirm('Reset session? All collected data will be cleared.')) {
+                if (window.confirm('Start a new session? The current session is kept in stored history.')) {
                   resetSession();
                   setData(getSessionData());
                 }
               }}
-              style={{
-                background: '#FFFFFF',
-                border: `1px solid ${theme.color.borderStrong}`,
-                borderRadius: theme.radius.md,
-                padding: '8px 14px',
-                fontSize: 13,
-                fontWeight: 500,
-                cursor: 'pointer',
-                fontFamily: 'inherit',
-                color: theme.color.danger,
-              }}
+              style={{ ...ghostBtnStyle, color: theme.color.text }}
             >
-              Reset session
+              New session
+            </button>
+            <button
+              onClick={() => {
+                if (window.confirm('Clear ALL stored sessions and feedback? This cannot be undone.')) {
+                  clearAllSessions();
+                  resetSession();
+                  setData(getSessionData());
+                }
+              }}
+              style={{ ...ghostBtnStyle, color: theme.color.danger }}
+            >
+              Clear all
             </button>
           </div>
         </div>

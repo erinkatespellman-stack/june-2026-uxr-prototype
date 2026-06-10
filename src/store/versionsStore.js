@@ -1,5 +1,8 @@
 import { useSyncExternalStore } from 'react';
 
+// `exists` controls whether a version shows in the Email · Audience Versions grid.
+// The RC Club version is created through the flow and only "exists" once published
+// (screen 2 shows Default only; screen 12 shows both after Publish).
 const initial = [
   {
     key: 'default',
@@ -9,15 +12,17 @@ const initial = [
     scheduledAt: null,
     lastEdited: 'Apr 18, 2026',
     variant: 'default',
+    exists: true,
   },
   {
     key: 'rc-club',
     name: 'RC Club',
     persona: 'RC Club',
-    status: 'Published',
+    status: 'Draft',
     scheduledAt: null,
-    lastEdited: 'May 14, 2026',
+    lastEdited: 'Apr 18, 2026',
     variant: 'rc-club',
+    exists: false,
   },
 ];
 
@@ -37,6 +42,11 @@ export function updateVersion(key, patch) {
     versions: state.versions.map((v) => (v.key === key ? { ...v, ...patch } : v)),
   };
   notify();
+}
+
+// Publish a version: it now exists in the grid and is marked Published.
+export function publishVersion(key) {
+  updateVersion(key, { exists: true, status: 'Published', lastEdited: 'Apr 18, 2026' });
 }
 
 function subscribe(l) {

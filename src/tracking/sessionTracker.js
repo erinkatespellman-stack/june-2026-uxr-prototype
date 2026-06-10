@@ -1,5 +1,8 @@
-// Silent session tracker — in-memory only, no persistence.
-// Researcher views via /report route.
+// Session tracker — in-memory for the live /report view, mirrored to
+// localStorage so sessions persist across refreshes and can be exported as a
+// report. Researcher views/exports via the /report route.
+
+const STORAGE_KEY = 'uxr_sessions';
 
 const sessionData = {
   sessionId: `s_${Date.now().toString(36)}`,
@@ -20,8 +23,30 @@ function now() {
   return Date.now();
 }
 
+function loadSessions() {
+  try {
+    if (typeof localStorage === 'undefined') return [];
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+  } catch {
+    return [];
+  }
+}
+
+// Mirror the current session into the persisted sessions list (upsert by id).
+function persist() {
+  try {
+    if (typeof localStorage === 'undefined') return;
+    const others = loadSessions().filter((s) => s.sessionId !== sessionData.sessionId);
+    others.push(getSessionData());
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(others));
+  } catch {
+    /* storage unavailable or quota exceeded — keep running in-memory */
+  }
+}
+
 function record(entry) {
   sessionData.timeline.push({ ...entry, at: now() });
+  persist();
 }
 
 export function trackPageVisit(pageName) {
@@ -76,6 +101,20 @@ export function getSessionData() {
   }
   snapshot.durationSeconds = (now() - sessionData.startedAt) / 1000;
   return snapshot;
+}
+
+// All persisted sessions (current + past), for the report's aggregate export.
+export function getAllSessions() {
+  return loadSessions();
+}
+
+// Wipe all locally-stored sessions (does not touch the live in-memory session).
+export function clearAllSessions() {
+  try {
+    if (typeof localStorage !== 'undefined') localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    /* ignore */
+  }
 }
 
 export function resetSession() {

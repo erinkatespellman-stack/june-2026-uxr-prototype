@@ -2,95 +2,6 @@ import React from 'react';
 import theme from '../theme';
 import { getContentForVariant } from '../content/emailContent';
 
-// Coastal "photograph" SVG — four palette variants used by the hero.
-const PALETTES = {
-  coast: {
-    sky: ['#1F3B4A', '#3E6178', '#7FA2B8', '#C4D4DE'],
-    water: ['#1F2D38', '#3B4E5B'],
-    sand: '#D8C7A6',
-    sun: '#F0DDB8',
-    chair: '#3F4A55',
-  },
-  sunset: {
-    sky: ['#3B2541', '#7A3A4D', '#D67F5A', '#F1B97A'],
-    water: ['#2A2438', '#4A3A52'],
-    sand: '#E8D2A6',
-    sun: '#FFD9A2',
-    chair: '#5C3A2E',
-  },
-  dawn: {
-    sky: ['#1F2C44', '#5B6F92', '#C8A8B5', '#F3D8CC'],
-    water: ['#1E2638', '#3A4858'],
-    sand: '#E5D5B8',
-    sun: '#FFE9CE',
-    chair: '#4A5168',
-  },
-  moonlit: {
-    sky: ['#06101F', '#16213F', '#34406A', '#646C8F'],
-    water: ['#050B16', '#16203A'],
-    sand: '#7A776C',
-    sun: '#E9E5D9',
-    chair: '#1F2640',
-  },
-};
-
-function CoastalHero({ variant = 'coast' }) {
-  const p = PALETTES[variant] || PALETTES.coast;
-  const id = `hero-${variant}`;
-  return (
-    <svg viewBox="0 0 600 240" width="100%" preserveAspectRatio="xMidYMid slice" style={{ display: 'block' }}>
-      <defs>
-        <linearGradient id={`sky-${id}`} x1="0" y1="0" x2="0" y2="1">
-          {p.sky.map((c, i) => (
-            <stop key={i} offset={`${(i / (p.sky.length - 1)) * 100}%`} stopColor={c} />
-          ))}
-        </linearGradient>
-        <linearGradient id={`water-${id}`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={p.water[1]} />
-          <stop offset="100%" stopColor={p.water[0]} />
-        </linearGradient>
-        <radialGradient id={`sun-${id}`} cx="0.72" cy="0.55" r="0.18">
-          <stop offset="0%" stopColor={p.sun} stopOpacity="0.95" />
-          <stop offset="100%" stopColor={p.sun} stopOpacity="0" />
-        </radialGradient>
-      </defs>
-
-      <rect x="0" y="0" width="600" height="160" fill={`url(#sky-${id})`} />
-      <rect x="0" y="0" width="600" height="160" fill={`url(#sun-${id})`} />
-      <circle cx="432" cy="132" r="22" fill={p.sun} opacity="0.9" />
-
-      <path
-        d="M0,158 C80,150 140,156 220,152 C300,148 360,158 440,154 C520,150 560,156 600,154 L600,170 L0,170 Z"
-        fill={p.water[0]}
-        opacity="0.6"
-      />
-      <rect x="0" y="160" width="600" height="55" fill={`url(#water-${id})`} />
-      <path
-        d="M0,178 C100,174 200,182 300,178 C400,174 500,182 600,178 L600,184 L0,184 Z"
-        fill="#FFFFFF"
-        opacity="0.08"
-      />
-      <path
-        d="M0,196 C120,192 220,200 340,196 C460,192 540,200 600,196 L600,202 L0,202 Z"
-        fill="#FFFFFF"
-        opacity="0.06"
-      />
-      <rect x="0" y="215" width="600" height="25" fill={p.sand} />
-      <path d="M0,215 C100,213 280,220 600,216 L600,220 L0,220 Z" fill="#000000" opacity="0.06" />
-
-      {[180, 240].map((x, i) => (
-        <g key={i} transform={`translate(${x},198)`}>
-          <path
-            d="M0,0 L18,0 L17,16 L1,16 Z M-1,4 L19,4 M2,0 L0,-10 L4,-10 L5,0 M14,0 L13,-10 L17,-10 L16,0"
-            fill={p.chair}
-            opacity="0.75"
-          />
-        </g>
-      ))}
-    </svg>
-  );
-}
-
 function PencilIcon() {
   return (
     <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden>
@@ -162,7 +73,7 @@ function Section({ id, status, label, onEdit, children }) {
             }}
           >
             <SparkIcon />
-            {label || 'AI suggested'}
+            {isEditing ? 'Editing' : label || 'Recommended'}
           </div>
 
           <button
@@ -319,8 +230,12 @@ export default function EmailPreview({
         onEdit={onEdit}
         onReject={onReject}
       >
-        <div style={{ position: 'relative', overflow: 'hidden' }}>
-          <CoastalHero variant={hero.content.variant} />
+        <div style={{ position: 'relative', overflow: 'hidden', height: 240 }}>
+          <img
+            src={hero.content.image}
+            alt={hero.content.title}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+          />
           <div
             style={{
               position: 'absolute',
@@ -436,13 +351,13 @@ export default function EmailPreview({
                     overflow: 'hidden',
                   }}
                 >
-                  <div
-                    style={{
-                      position: 'absolute',
-                      inset: 0,
-                      background: 'radial-gradient(circle at 70% 75%, rgba(255,255,255,0.22), transparent 60%)',
-                    }}
-                  />
+                  {item.image && (
+                    <img
+                      src={item.image}
+                      alt={item.title}
+                      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                    />
+                  )}
                 </div>
                 <div
                   style={{

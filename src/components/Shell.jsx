@@ -44,6 +44,16 @@ function NotificationIcon() {
   );
 }
 
+// Researcher session-report entry (discreet — opens /report)
+function ReportIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
+      <rect x="2.5" y="2" width="11" height="12" rx="1.2" stroke="currentColor" strokeWidth="1.2" />
+      <path d="M5 9.5v2M8 6.5v5M11 8v3.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 // Adobe Experience Cloud "infinity ribbon" mark — sits on the LIGHT shell header
 function AdobeExperienceCloudMark() {
   return (
@@ -105,10 +115,12 @@ function MarriottWordmark({ onClick }) {
   );
 }
 
-function ShellIconButton({ label, children, dark = false }) {
+function ShellIconButton({ label, children, dark = false, onClick }) {
   return (
     <button
       aria-label={label}
+      title={label}
+      onClick={onClick}
       style={{
         background: 'transparent',
         border: 'none',
@@ -209,6 +221,9 @@ export default function Shell({
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <ShellIconButton label="Session report" onClick={() => navigate('/report')}>
+            <ReportIcon />
+          </ShellIconButton>
           <ShellIconButton label="Help">
             <HelpIcon />
           </ShellIconButton>
