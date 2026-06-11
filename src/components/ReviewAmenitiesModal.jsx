@@ -208,6 +208,12 @@ export default function ReviewAmenitiesModal({ onCancel, onDone }) {
           <button
             onClick={() => {
               trackClick('amenities_done', { addedCount });
+              // Acceptance denominator for the report's amenity trust metric.
+              trackAIInteraction('amenities_committed', {
+                added: addedCount,
+                total: discovered.length,
+                audience: audienceLabel,
+              });
               onDone();
             }}
             style={{
