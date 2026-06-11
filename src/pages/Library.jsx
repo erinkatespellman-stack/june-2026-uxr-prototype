@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Shell from '../components/Shell';
+import AudienceLibraryModal from '../components/AudienceLibraryModal';
 import GuideAIModal from '../components/GuideAIModal';
 import ReviewAmenitiesModal from '../components/ReviewAmenitiesModal';
 import MicroSurvey from '../components/MicroSurvey';
 import theme from '../theme';
 import { trackPageVisit, trackClick, trackSurveyResponse } from '../tracking/sessionTracker';
-import { getFeaturesByCategory, completeDiscovery, useAmenityState } from '../store/amenityStore';
+import { getFeaturesByCategory, completeDiscovery, useAmenityState, setDiscoveryAudience } from '../store/amenityStore';
 
 function PrimaryButton({ children, onClick, style }) {
   const [hover, setHover] = useState(false);
@@ -366,7 +367,7 @@ export default function Library() {
   const navigate = useNavigate();
   const [filter, setFilter] = useState('all');
   const [query, setQuery] = useState('');
-  const [modal, setModal] = useState(null); // null | 'guide' | 'review' — amenity creation
+  const [modal, setModal] = useState(null); // null | 'audience' | 'guide' | 'review' — amenity creation
   const [createOpen, setCreateOpen] = useState(false); // "Create New" dropdown sheet
   const [showSurvey, setShowSurvey] = useState(false);
 
@@ -386,11 +387,12 @@ export default function Library() {
     navigate('/versions/audience');
   };
 
-  // "Create New" sheet → "Create New Amenity" launches the AI amenity flow (B → C).
+  // "Create New" sheet → "Create New Amenity" launches the AI amenity flow.
+  // Audience Library (who) → Guide AI (how) → Review (what).
   const startAmenityCreation = () => {
     setCreateOpen(false);
     trackClick('create_new_amenity');
-    setModal('guide');
+    setModal('audience');
   };
 
   const openEmail = () => {
@@ -586,10 +588,19 @@ export default function Library() {
         </div>
       </main>
 
+      {/* Audience Library — pick WHO the amenities are for (precedes Guide AI) */}
+      {modal === 'audience' && (
+        <AudienceLibraryModal
+          onCancel={() => setModal(null)}
+          onPick={(item) => { setDiscoveryAudience(item); setModal('guide'); }}
+        />
+      )}
+
       {/* Screen B — Guide our AI */}
       {modal === 'guide' && (
         <GuideAIModal
           onCancel={() => setModal(null)}
+          onBack={() => setModal('audience')}
           onNext={() => setModal('review')}
         />
       )}

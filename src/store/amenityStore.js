@@ -59,12 +59,58 @@ function computeBrandMatch(name) {
   return Math.max(60, Math.min(98, score));
 }
 
-// AI-discovered amenities surfaced in the "Review AI Generated Amenities" modal (C).
-// These are the real venues & experiences at The Ritz-Carlton, Amelia Island
-// (pulled from ritzcarlton.com/.../jaxam). brandMatch + the "Consider refining"
-// flag are computed from the title via computeBrandMatch above.
-function freshDiscovered() {
-  const raw = [
+// ──────────────────────────────────────────────────────────────────────────
+// Discovery targets — which audience version the amenities are being generated
+// for. Generation is version-aware: rather than one generic sweep of the property
+// site, the user picks who the amenities are for, and the AI pulls from the page
+// that describes that experience. "All audiences" reads the property overview;
+// "RC Club" reads the Club Level page, so the discovered amenities (Club Lounge
+// Access, Club Beach…) are the ones that actually belong in the RC Club email —
+// not generic property highlights.
+export const DISCOVERY_TARGETS = [
+  {
+    key: 'property-wide',
+    label: 'All audiences',
+    sublabel: 'Property-wide highlights',
+    url: 'https://www.ritzcarlton.com/en/hotels/jaxam-the-ritz-carlton-amelia-island/overview/',
+  },
+  {
+    key: 'rc-club',
+    label: 'RC Club',
+    sublabel: 'Club Level members',
+    url: 'https://www.ritzcarlton.com/en/hotels/jaxam-the-ritz-carlton-amelia-island/club/',
+  },
+  {
+    key: 'beach',
+    label: 'Beach Lovers',
+    sublabel: 'Beach & coastal guests',
+    url: 'https://www.ritzcarlton.com/en/hotels/jaxam-the-ritz-carlton-amelia-island/area-activities/',
+  },
+];
+
+export function getTarget(key) {
+  return DISCOVERY_TARGETS.find((t) => t.key === key) || DISCOVERY_TARGETS[0];
+}
+
+// Which bespoke amenity set an audience maps to. Audiences not listed here fall
+// back to the general property-wide sweep (we don't have a dedicated page for
+// every passion/tier yet), but RC Club and Beach Lovers pull tailored sets.
+const AUDIENCE_TO_TARGET = {
+  'rc-club': 'rc-club',
+  beach: 'beach',
+  'property-wide': 'property-wide',
+};
+
+export function targetForAudience(audienceKey) {
+  return AUDIENCE_TO_TARGET[audienceKey] || 'property-wide';
+}
+
+// Real venues & experiences at The Ritz-Carlton, Amelia Island, grouped by the
+// audience version they belong to (pulled from ritzcarlton.com/.../jaxam).
+// brandMatch + the "Consider refining" flag are computed from each title via
+// computeBrandMatch above.
+const TARGET_AMENITIES = {
+  'property-wide': [
     {
       key: 'salt',
       name: 'Salt',
@@ -121,12 +167,108 @@ function freshDiscovered() {
       description:
         "Cast a line on the Amelia River with our Executive Chef, then savor your catch at Salt's Chef's Table.",
     },
-  ];
+  ],
+  'rc-club': [
+    {
+      key: 'club-lounge-access',
+      name: 'Club Lounge Access',
+      category: 'Dining',
+      image: '/images/library/bar-cocktail.png',
+      description:
+        'Delight in an exclusive lounge experience, replete with an endless array of sumptuous beverages and culinary delights — from exquisite breakfast to delectable lunch, mid-day snacks, hors d’oeuvres, desserts, and cordials.',
+    },
+    {
+      key: 'club-beach',
+      name: 'Club Beach Experience',
+      category: 'Experiences',
+      image: '/images/library/beach-deck.png',
+      description:
+        'A personalized stretch of sand reserved for Club members, with complimentary cocktails, packed-lunch delivery, plush towels, umbrellas, and chilled refreshments throughout the day.',
+    },
+    {
+      key: 'first-call',
+      name: 'First Call Cocktail Hour',
+      category: 'Experiences',
+      image: '/images/amenities/rooftop-terrace.png',
+      description:
+        'Each evening at five, Club members gather in the lounge for a specially crafted cocktail showcasing a rotating selection of spirits.',
+    },
+    {
+      key: 'sommelier-selection',
+      name: "Sommelier's Selection",
+      category: 'Dining',
+      image: '/images/amenities/michelin-dining.png',
+      description:
+        'A curated daily pour of wines, sparkling wines, local beers, and spirits — hand-selected by our sommelier and served throughout the day.',
+    },
+    {
+      key: 'club-concierge',
+      name: 'Dedicated Club Concierge',
+      category: 'Property Features',
+      image: '/images/library/pool-cabanas.png',
+      description:
+        'An expert concierge devoted to your stay — arranging dining reservations, curating excursions, and tending to every personal detail.',
+    },
+    {
+      key: 'eighth-floor-suites',
+      name: 'Eighth-Floor Club Suites',
+      category: 'Property Features',
+      image: '/images/library/pool-aerial.png',
+      description:
+        'Luxurious ocean-view rooms and suites on our exclusive eighth floor, reserved entirely for Club members.',
+    },
+  ],
+  beach: [
+    {
+      key: 'oceanfront-pool',
+      name: 'Oceanfront Pool & Hot Tub',
+      category: 'Property Features',
+      image: '/images/library/ocean-pool.png',
+      description:
+        'Sun-warmed pools and a tranquil hot tub overlooking thirteen miles of pristine Atlantic shoreline.',
+    },
+    {
+      key: 'beach-cabanas',
+      name: 'Atlantic Beach Cabanas',
+      category: 'Property Features',
+      image: '/images/library/pool-cabanas.png',
+      description:
+        "Private beachfront cabanas with chilled towels and attentive service along the island's unspoiled coast.",
+    },
+    {
+      key: 'club-beach',
+      name: 'Club Beach Experience',
+      category: 'Experiences',
+      image: '/images/library/beach-deck.png',
+      description:
+        'A personalized stretch of sand with complimentary cocktails, packed-lunch delivery, plush towels, umbrellas, and chilled refreshments throughout the day.',
+    },
+    {
+      key: 'hook-line-supper',
+      name: 'Hook, Line & Supper',
+      category: 'Experiences',
+      image: '/images/amenities/rooftop-terrace.png',
+      description:
+        "Cast a line on the Amelia River with our Executive Chef, then savor your catch at Salt's Chef's Table.",
+    },
+    {
+      key: 'coquina',
+      name: 'Coquina',
+      category: 'Dining',
+      image: '/images/library/pool-aerial.png',
+      description:
+        'Latin-inspired seafood and coastal plates served beneath the stars on a breezy ocean-view terrace.',
+    },
+  ],
+};
 
+function freshDiscovered(target = 'property-wide') {
+  const raw = TARGET_AMENITIES[target] || TARGET_AMENITIES['property-wide'];
   return raw.map((a) => {
     const brandMatch = computeBrandMatch(a.name);
     return {
       ...a,
+      target,
       brandMatch,
       suggestion: brandMatch < REFINE_THRESHOLD ? 'Consider refining' : null,
       added: false,
@@ -134,10 +276,12 @@ function freshDiscovered() {
   });
 }
 
-function freshState() {
+function freshState(target = 'property-wide', audienceLabel = 'All audiences') {
   return {
     baseFeatures: BASE_FEATURES,
-    discovered: freshDiscovered(),
+    target,
+    audienceLabel,
+    discovered: freshDiscovered(target),
     discoveryComplete: false,
   };
 }
@@ -183,6 +327,24 @@ export function completeDiscovery() {
 export function resetAmenities() {
   state = freshState();
   notify();
+}
+
+// Choose which audience the discovery is generating for. Maps the audience to its
+// bespoke amenity set (or the property-wide fallback), re-runs the AI sweep, and
+// resets accepted state — so the review modal shows the newly-targeted candidates.
+// `audience` = { key, name } from the audience-library grid.
+export function setDiscoveryAudience(audience) {
+  const target = targetForAudience(audience.key);
+  state = freshState(target, audience.name || getTarget(target).label);
+  notify();
+}
+
+export function getDiscoveryTarget() {
+  return state.target;
+}
+
+export function getDiscoveryAudienceLabel() {
+  return state.audienceLabel;
 }
 
 // Library selectors — base features plus any committed (accepted) discoveries,

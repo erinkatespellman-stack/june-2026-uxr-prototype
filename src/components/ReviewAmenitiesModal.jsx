@@ -94,8 +94,9 @@ function AmenityCard({ amenity }) {
 }
 
 export default function ReviewAmenitiesModal({ onCancel, onDone }) {
-  const { discovered } = useAmenityState();
+  const { discovered, target, audienceLabel } = useAmenityState();
   const addedCount = discovered.filter((a) => a.added).length;
+  const targeted = target !== 'property-wide';
 
   return (
     <div
@@ -132,26 +133,48 @@ export default function ReviewAmenitiesModal({ onCancel, onDone }) {
               <div style={{ fontSize: 20, fontWeight: 600, color: theme.color.text, marginBottom: 6 }}>
                 Review AI Generated Amenities
               </div>
-              <div style={{ fontSize: 13, color: theme.color.textMuted, lineHeight: 1.55, maxWidth: 560 }}>
-                7 amenities found across your website. Preview and accept to add to library. You can edit the amenity once it is in your library.
+              <div style={{ fontSize: 13, color: theme.color.textMuted, lineHeight: 1.55, maxWidth: 580 }}>
+                {discovered.length} amenities found for the{' '}
+                <strong style={{ color: theme.color.text }}>{audienceLabel}</strong> version
+                {targeted ? ' — tailored to their experience' : ' across your property website'}.
+                Preview and accept to add to library. You can edit the amenity once it is in your library.
               </div>
             </div>
-            <div
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 6,
-                background: theme.color.successBg,
-                color: theme.color.success,
-                fontSize: 12,
-                fontWeight: 600,
-                padding: '6px 12px',
-                borderRadius: theme.radius.pill,
-                whiteSpace: 'nowrap',
-                flexShrink: 0,
-              }}
-            >
-              <CheckIcon color={theme.color.success} /> Ritz-Carlton brand tone applied
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-end', flexShrink: 0 }}>
+              {targeted && (
+                <div
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    background: '#F1EAFB',
+                    color: '#7A4DD0',
+                    fontSize: 12,
+                    fontWeight: 600,
+                    padding: '6px 12px',
+                    borderRadius: theme.radius.pill,
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  Targeted to {audienceLabel}
+                </div>
+              )}
+              <div
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  background: theme.color.successBg,
+                  color: theme.color.success,
+                  fontSize: 12,
+                  fontWeight: 600,
+                  padding: '6px 12px',
+                  borderRadius: theme.radius.pill,
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                <CheckIcon color={theme.color.success} /> Ritz-Carlton brand tone applied
+              </div>
             </div>
           </div>
         </div>

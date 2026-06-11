@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import theme from '../theme';
 import { trackClick, trackAIInteraction } from '../tracking/sessionTracker';
+import { getTarget, useAmenityState } from '../store/amenityStore';
 
 // Screen B — "Guide our AI with a little context".
 // First step of the AI amenity-discovery flow opened from the Library banner.
@@ -96,16 +97,21 @@ const inputStyle = {
   fontFamily: theme.font.family,
 };
 
-export default function GuideAIModal({ onCancel, onNext }) {
+export default function GuideAIModal({ onCancel, onNext, onBack }) {
+  // The audience was chosen in the preceding Audience Library modal; we read the
+  // resulting target from the store and pre-point the URL at that audience's page.
+  const { target, audienceLabel } = useAmenityState();
+  const tailored = target !== 'property-wide';
+
   const [mode, setMode] = useState('multiple');
-  const [url, setUrl] = useState('https://www.ritzcarlton.com/en/hotels/jaxam-the-ritz-carlton-amelia-island/overview/');
+  const [url, setUrl] = useState(getTarget(target).url);
   const [tone, setTone] = useState('Ritz-Carlton');
   const [focus, setFocus] = useState('');
   const [amenity, setAmenity] = useState('');
 
   const handleNext = () => {
-    trackAIInteraction('guide_ai_submit', { mode, tone, hasFocus: !!focus.trim() });
-    onNext({ mode, url, tone, focus, amenity });
+    trackAIInteraction('guide_ai_submit', { mode, tone, target, hasFocus: !!focus.trim() });
+    onNext({ mode, url, tone, focus, amenity, target });
   };
 
   return (
@@ -146,6 +152,51 @@ export default function GuideAIModal({ onCancel, onNext }) {
           </div>
           <div style={{ fontSize: 13, color: theme.color.textMuted, lineHeight: 1.55, marginBottom: 18 }}>
             Tell us what you have in mind, and we'll draft audience versions you're free to approve before anything is saved.
+          </div>
+
+          {/* Audience target — chosen in the preceding Audience Library modal */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 12,
+              padding: '12px 14px',
+              borderRadius: theme.radius.md,
+              border: `1px solid ${tailored ? '#E2D5F6' : theme.color.border}`,
+              background: tailored ? '#F3EFFC' : theme.color.surfaceMuted || '#F7F7F8',
+              marginBottom: 20,
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <SparkleIcon color={tailored ? '#7A4DD0' : theme.color.textMuted} size={15} />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <span style={{ fontSize: 11, fontWeight: 600, color: theme.color.textMuted, letterSpacing: 0.3, textTransform: 'uppercase' }}>
+                  Generating for
+                </span>
+                <span style={{ fontSize: 14, fontWeight: 600, color: tailored ? '#7A4DD0' : theme.color.text }}>
+                  {audienceLabel}
+                  {tailored && <span style={{ fontWeight: 500, color: theme.color.textMuted }}> · tailored set</span>}
+                </span>
+              </div>
+            </div>
+            {onBack && (
+              <button
+                onClick={onBack}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: theme.color.link,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  padding: '6px 4px',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                Change
+              </button>
+            )}
           </div>
 
           {/* Mode toggle */}
