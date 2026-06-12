@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import theme from '../theme';
+import Shell from '../components/Shell';
 
 // Researcher-facing planning doc for the moderated study behind this prototype.
 // Opened from the book icon in the Adobe shell header. Static content — it's the
@@ -47,9 +48,10 @@ export default function ResearchPlan() {
   const navigate = useNavigate();
 
   return (
-    <div style={{ minHeight: '100vh', background: '#FAFAFA', color: theme.color.text, fontFamily: theme.font.family, padding: '48px 56px 80px' }}>
-      <style>{`@media print { .no-print { display: none !important; } .plan-card { break-inside: avoid; } body { background: #FFF; } }`}</style>
-      <div style={{ maxWidth: 980, margin: '0 auto' }}>
+    <Shell breadcrumbs={['Research Ops', 'Research Plan']}>
+      <main style={{ flex: 1, overflowY: 'auto', background: '#FAFAFA', color: theme.color.text, padding: '48px 56px 80px' }}>
+        <style>{`@media print { .no-print { display: none !important; } .plan-card { break-inside: avoid; } body { background: #FFF; } }`}</style>
+        <div style={{ maxWidth: 980, margin: '0 auto' }}>
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16, marginBottom: 8 }}>
           <div>
@@ -220,7 +222,8 @@ export default function ResearchPlan() {
         <div style={{ marginTop: 28, fontSize: 11, color: theme.color.textSubtle, textAlign: 'center' }}>
           Plan lives with the prototype · open the live data anytime from the report icon in the header.
         </div>
-      </div>
-    </div>
+        </div>
+      </main>
+    </Shell>
   );
 }

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import theme from '../theme';
+import Shell from '../components/Shell';
 import { getSessionData, resetSession, getAllSessions, clearAllSessions } from '../tracking/sessionTracker';
 
 // Researcher view — a STUDY-LEVEL report aggregated across every stored session.
@@ -320,9 +321,10 @@ export default function Report() {
   const completionRate = pct(a.published, a.participants);
 
   return (
-    <div style={{ minHeight: '100vh', background: '#FAFAFA', color: theme.color.text, fontFamily: theme.font.family, padding: '48px 56px 80px' }}>
-      <style>{`@media print { .no-print { display: none !important; } .report-card { break-inside: avoid; } body { background: #FFF; } }`}</style>
-      <div style={{ maxWidth: 980, margin: '0 auto' }}>
+    <Shell breadcrumbs={['Research Ops', 'Study Summary']}>
+      <main style={{ flex: 1, overflowY: 'auto', background: '#FAFAFA', color: theme.color.text, padding: '48px 56px 80px' }}>
+        <style>{`@media print { .no-print { display: none !important; } .report-card { break-inside: avoid; } body { background: #FFF; } }`}</style>
+        <div style={{ maxWidth: 980, margin: '0 auto' }}>
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16, marginBottom: 8 }}>
           <div>
@@ -455,7 +457,8 @@ export default function Report() {
         <div style={{ marginTop: 28, fontSize: 11, color: theme.color.textSubtle, textAlign: 'center' }}>
           Sessions persist in this browser via local storage. Export the CSV/JSON to share or aggregate elsewhere.
         </div>
-      </div>
-    </div>
+        </div>
+      </main>
+    </Shell>
   );
 }
