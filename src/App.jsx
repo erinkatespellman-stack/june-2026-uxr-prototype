@@ -8,6 +8,7 @@ import RCClubFlow from './pages/RCClubFlow';
 import GuidedConfig from './pages/GuidedConfig';
 import CompareVersions from './pages/CompareVersions';
 import Report from './pages/Report';
+import ResearchPlan from './pages/ResearchPlan';
 
 export default function App() {
   return (
@@ -22,6 +23,7 @@ export default function App() {
         <Route path="/versions/configure" element={<GuidedConfig />} />
         <Route path="/versions/compare" element={<CompareVersions />} />
         <Route path="/report" element={<Report />} />
+        <Route path="/research" element={<ResearchPlan />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

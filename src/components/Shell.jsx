@@ -54,6 +54,16 @@ function ReportIcon() {
   );
 }
 
+// Research-plan entry (discreet — opens /research)
+function BookIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
+      <path d="M8 3.5C6.8 2.6 5.3 2.3 3.4 2.5a.6.6 0 0 0-.5.6v8.1c0 .37.32.65.69.6 1.7-.2 3 .1 4.1.9 1.1-.8 2.4-1.1 4.1-.9a.6.6 0 0 0 .69-.6V3.1a.6.6 0 0 0-.5-.6c-1.9-.2-3.4.1-4.6 1Z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
+      <path d="M8 3.5v9" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 // Adobe Experience Cloud "infinity ribbon" mark — sits on the LIGHT shell header
 function AdobeExperienceCloudMark() {
   return (
@@ -221,6 +231,9 @@ export default function Shell({
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <ShellIconButton label="Research plan" onClick={() => navigate('/research')}>
+            <BookIcon />
+          </ShellIconButton>
           <ShellIconButton label="Session report" onClick={() => navigate('/report')}>
             <ReportIcon />
           </ShellIconButton>
