@@ -9,6 +9,7 @@ import {
   trackClick,
   trackAIInteraction,
   trackSurveyResponse,
+  getMode,
 } from '../tracking/sessionTracker';
 import {
   useRCClubState,
@@ -605,6 +606,7 @@ export default function RCClubFlow() {
   // generated version is on screen (and earlier if they accept/edit/reject).
   const triggerSurvey = () => {
     if (surveyShownRef.current) return;
+    if (getMode() === 'moderated') return; // moderator captures via the console instead
     surveyShownRef.current = true;
     setShowSurvey(true);
   };

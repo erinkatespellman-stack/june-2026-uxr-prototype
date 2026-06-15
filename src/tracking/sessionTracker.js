@@ -3,9 +3,11 @@
 // report. Researcher views/exports via the /report route.
 
 const STORAGE_KEY = 'uxr_sessions';
+const MODE_KEY = 'uxr_mode'; // 'moderated' | 'unmoderated'
 
 const sessionData = {
   sessionId: `s_${Date.now().toString(36)}`,
+  participant: null, // researcher-assigned name/label (e.g. "Maria" or "P3")
   startedAt: Date.now(),
   timeline: [], // { type, page, label, meta, at }
   pageTimings: {}, // pageName -> totalSeconds
@@ -103,6 +105,41 @@ export function getSessionData() {
   return snapshot;
 }
 
+// Name the current session's participant (set at the start of an interview).
+// Threads the name onto the live session so the report can line up what a named
+// participant SAID (dial answers) against what they DID (their tracked clicks).
+export function setParticipant(name) {
+  sessionData.participant = name ? name.trim() : null;
+  persist();
+}
+
+export function getParticipant() {
+  return sessionData.participant;
+}
+
+export function getSessionId() {
+  return sessionData.sessionId;
+}
+
+// Study mode. Moderated suppresses the in-flow survey (the researcher captures via
+// the console instead); unmoderated keeps the participant-facing feedback.
+export function getMode() {
+  try {
+    if (typeof localStorage === 'undefined') return 'unmoderated';
+    return localStorage.getItem(MODE_KEY) || 'unmoderated';
+  } catch {
+    return 'unmoderated';
+  }
+}
+
+export function setMode(mode) {
+  try {
+    if (typeof localStorage !== 'undefined') localStorage.setItem(MODE_KEY, mode);
+  } catch {
+    /* ignore */
+  }
+}
+
 // All persisted sessions (current + past), for the report's aggregate export.
 export function getAllSessions() {
   return loadSessions();
@@ -119,6 +156,7 @@ export function clearAllSessions() {
 
 export function resetSession() {
   sessionData.sessionId = `s_${Date.now().toString(36)}`;
+  sessionData.participant = null;
   sessionData.startedAt = Date.now();
   sessionData.timeline = [];
   sessionData.pageTimings = {};

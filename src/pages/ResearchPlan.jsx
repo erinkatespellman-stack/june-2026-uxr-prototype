@@ -196,6 +196,15 @@ export default function ResearchPlan() {
             <li>“What's the worst that happens if it gets it wrong?” → how much brand risk is on the line</li>
             <li>“How much time would the right balance save you each time?” → helps justify the budget</li>
           </ul>
+          <div style={{ marginTop: 18, paddingTop: 16, borderTop: `1px solid ${theme.color.borderSoft}`, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+            <button
+              onClick={() => navigate('/research/console')}
+              style={{ background: '#7A4DD0', color: '#FFFFFF', border: 'none', borderRadius: theme.radius.pill, padding: '10px 20px', fontSize: 15, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
+            >
+              ＋ Capture answers in the console
+            </button>
+            <span style={{ fontSize: 14, color: theme.color.textMuted }}>Record each participant's dial answers as you interview. They flow straight into the results.</span>
+          </div>
         </Card>
 
         {/* 6. Keeping it honest */}

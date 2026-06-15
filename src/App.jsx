@@ -9,6 +9,7 @@ import GuidedConfig from './pages/GuidedConfig';
 import CompareVersions from './pages/CompareVersions';
 import Report from './pages/Report';
 import ResearchPlan from './pages/ResearchPlan';
+import ResearchConsole from './pages/ResearchConsole';
 
 export default function App() {
   return (
@@ -24,6 +25,7 @@ export default function App() {
         <Route path="/versions/compare" element={<CompareVersions />} />
         <Route path="/report" element={<Report />} />
         <Route path="/research" element={<ResearchPlan />} />
+        <Route path="/research/console" element={<ResearchConsole />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

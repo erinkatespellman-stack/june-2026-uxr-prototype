@@ -1,7 +1,13 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import theme from '../theme';
 import Shell from '../components/Shell';
 import { getSessionData, resetSession, getAllSessions, clearAllSessions } from '../tracking/sessionTracker';
+import { useDialResponses, MOMENTS, DIAL_POSITIONS, positionLabel } from '../store/dialStore';
+
+// Colour per dial position, reused by the control-dial bars.
+const POSITION_COLOR = { less: '#2F7DC4', 'just-right': theme.color.success, more: '#7A4DD0' };
+const POSITION_ORDINAL = { less: 0, 'just-right': 1, more: 2 };
 
 // Researcher view: a STUDY-LEVEL report aggregated across every stored session.
 // It leads with the signals that actually answer the research question ("does AI
@@ -214,13 +220,74 @@ function SegmentBar({ segments, total }) {
   );
 }
 
+// ──────── control dial (research plan §5) ────────
+
+function ControlDialBody({ dial }) {
+  if (!dial.length) {
+    return (
+      <div style={{ fontSize: 15, color: theme.color.textMuted, lineHeight: 1.5 }}>
+        No dial answers captured yet. Record them in the Capture Console as you run interviews and they appear here.
+      </div>
+    );
+  }
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 26 }}>
+      {MOMENTS.map((m) => {
+        const rows = dial.filter((r) => r.moment === m.key && r.desired);
+        if (!rows.length) return null;
+        const segments = DIAL_POSITIONS.map((p) => ({
+          label: p.label,
+          value: rows.filter((r) => r.desired === p.key).length,
+          color: POSITION_COLOR[p.key],
+        }));
+        const withCurrent = rows.filter((r) => r.current);
+        let aligned = 0;
+        let wantLess = 0;
+        let wantMore = 0;
+        withCurrent.forEach((r) => {
+          const d = POSITION_ORDINAL[r.desired];
+          const c = POSITION_ORDINAL[r.current];
+          if (c === d) aligned += 1;
+          else if (c > d) wantLess += 1; // feels more automated than they'd like
+          else wantMore += 1;
+        });
+        const whys = rows.filter((r) => r.why);
+        return (
+          <div key={m.key}>
+            <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 12 }}>{m.label}</div>
+            <SegmentBar segments={segments} total={rows.length} />
+            {withCurrent.length > 0 && (
+              <div style={{ marginTop: 14, fontSize: 14.5, color: theme.color.textMuted, lineHeight: 1.55 }}>
+                Versus how it feels today: <strong style={{ color: theme.color.text }}>{aligned} of {withCurrent.length}</strong> feel it's about right.
+                {wantLess > 0 && <> {wantLess} want AI to do <strong style={{ color: '#2F7DC4' }}>less</strong>.</>}
+                {wantMore > 0 && <> {wantMore} want it to do <strong style={{ color: '#7A4DD0' }}>more</strong>.</>}
+              </div>
+            )}
+            {whys.length > 0 && (
+              <div style={{ marginTop: 14, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {whys.map((r) => (
+                  <div key={r.id} style={{ fontSize: 14.5, color: theme.color.text, lineHeight: 1.5, paddingLeft: 12, borderLeft: `3px solid ${POSITION_COLOR[r.desired]}` }}>
+                    “{r.why}”
+                    <span style={{ color: theme.color.textSubtle }}> · {r.participant || 'anon'} ({positionLabel(r.desired).toLowerCase()})</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 // ──────── per-session deep dive ────────
 
-function SessionRow({ session }) {
+function SessionRow({ session, dial }) {
   const [open, setOpen] = useState(false);
   const published = (session.aiInteractions || []).some((a) => a.action === 'publish_version');
   const sentiment = (session.surveyResponses || []).map((r) => r.answer).join(', ') || 'no answer';
   const tl = session.timeline || [];
+  const myDial = session.participant ? dial.filter((r) => r.participant === session.participant && r.desired) : [];
   return (
     <div style={{ borderBottom: `1px solid ${theme.color.border}` }}>
       <button
@@ -240,7 +307,12 @@ function SessionRow({ session }) {
         }}
       >
         <span style={{ transform: open ? 'rotate(90deg)' : 'none', transition: 'transform 120ms', color: theme.color.textMuted, fontSize: 14 }}>▶</span>
-        <span style={{ fontSize: 14.5, fontFamily: 'monospace', color: theme.color.textMuted }}>{session.sessionId}</span>
+        <span style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+          <span style={{ fontSize: 14.5, fontWeight: session.participant ? 600 : 400, color: session.participant ? '#7A4DD0' : theme.color.textMuted, fontFamily: session.participant ? 'inherit' : 'monospace', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            {session.participant || session.sessionId}
+          </span>
+          {session.participant && <span style={{ fontSize: 11.5, fontFamily: 'monospace', color: theme.color.textSubtle }}>{session.sessionId}</span>}
+        </span>
         <span style={{ fontSize: 15, color: theme.color.text }}>{sentiment}</span>
         <span style={{ fontSize: 14.5, color: theme.color.textMuted }}>{formatDuration(session.durationSeconds)}</span>
         <span style={{ fontSize: 14, fontWeight: 600, color: published ? theme.color.success : theme.color.textSubtle }}>
@@ -249,6 +321,18 @@ function SessionRow({ session }) {
       </button>
       {open && (
         <div style={{ padding: '4px 14px 16px' }}>
+          {myDial.length > 0 && (
+            <div style={{ marginBottom: 12, padding: '10px 12px', background: '#F3EFFC', borderRadius: theme.radius.md, fontSize: 13.5, color: theme.color.text, lineHeight: 1.6 }}>
+              <strong style={{ color: '#7A4DD0' }}>Dial answers:</strong>{' '}
+              {myDial.map((r, idx) => (
+                <span key={r.id}>
+                  {idx > 0 && ' · '}
+                  {(r.moment === 'amenities' ? 'Amenities' : 'Versions')}: {positionLabel(r.desired)}
+                  {r.current && ` (feels ${positionLabel(r.current).toLowerCase()} today)`}
+                </span>
+              ))}
+            </div>
+          )}
           {tl.length === 0 ? (
             <div style={{ fontSize: 14.5, color: theme.color.textMuted, padding: 8 }}>No events.</div>
           ) : (
@@ -295,6 +379,8 @@ const ghostBtnStyle = {
 };
 
 export default function Report() {
+  const navigate = useNavigate();
+  const dial = useDialResponses();
   const [sessions, setSessions] = useState(() => getAllSessions());
 
   useEffect(() => {
@@ -340,12 +426,18 @@ export default function Report() {
           </div>
           <div className="no-print" style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
             <button
+              onClick={() => navigate('/research/console')}
+              style={{ ...ghostBtnStyle, borderColor: '#CDB8F0', color: '#7A4DD0', fontWeight: 600 }}
+            >
+              Capture console →
+            </button>
+            <button
               onClick={() => downloadFile(`uxr-feedback-${getAllSessions().length}p.csv`, feedbackCSV(getAllSessions()), 'text/csv;charset=utf-8')}
               style={{ background: theme.color.primary, border: 'none', borderRadius: theme.radius.md, padding: '8px 14px', fontSize: 15, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', color: '#FFFFFF' }}
             >
               Download CSV
             </button>
-            <button onClick={() => downloadFile('uxr-sessions.json', JSON.stringify(getAllSessions(), null, 2), 'application/json')} style={ghostBtnStyle}>
+            <button onClick={() => downloadFile('uxr-study-data.json', JSON.stringify({ sessions: getAllSessions(), dial }, null, 2), 'application/json')} style={ghostBtnStyle}>
               Export JSON
             </button>
             <button onClick={() => window.print()} style={ghostBtnStyle}>Print</button>
@@ -386,6 +478,14 @@ export default function Report() {
               caption="Micro-survey responses pooled across every participant, the core attitudinal read on whether the automation lands."
             >
               <SegmentBar segments={sentimentSegments} total={a.surveyTotal} />
+            </Card>
+
+            {/* Control dial: moderated/unmoderated capture from §5 */}
+            <Card
+              title="The control dial: how much AI do people want?"
+              caption="Where participants set the dial for each AI moment, captured in interviews. The gap between where they'd set it and how it feels today is the signal for the roadmap."
+            >
+              <ControlDialBody dial={dial} />
             </Card>
 
             {/* Trust behaviour */}
@@ -447,7 +547,7 @@ export default function Report() {
               </div>
               <div style={{ borderTop: `1px solid ${theme.color.border}` }}>
                 {[...sessions].reverse().map((s) => (
-                  <SessionRow key={s.sessionId} session={s} />
+                  <SessionRow key={s.sessionId} session={s} dial={dial} />
                 ))}
               </div>
             </Card>

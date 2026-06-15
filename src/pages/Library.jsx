@@ -6,7 +6,7 @@ import GuideAIModal from '../components/GuideAIModal';
 import ReviewAmenitiesModal from '../components/ReviewAmenitiesModal';
 import MicroSurvey from '../components/MicroSurvey';
 import theme from '../theme';
-import { trackPageVisit, trackClick, trackSurveyResponse } from '../tracking/sessionTracker';
+import { trackPageVisit, trackClick, trackSurveyResponse, getMode } from '../tracking/sessionTracker';
 import { getFeaturesByCategory, completeDiscovery, useAmenityState, setDiscoveryAudience } from '../store/amenityStore';
 
 function PrimaryButton({ children, onClick, style }) {
@@ -609,7 +609,7 @@ export default function Library() {
       {modal === 'review' && (
         <ReviewAmenitiesModal
           onCancel={() => setModal(null)}
-          onDone={() => { completeDiscovery(); setModal(null); setShowSurvey(true); }}
+          onDone={() => { completeDiscovery(); setModal(null); setShowSurvey(getMode() !== 'moderated'); }}
         />
       )}
 
