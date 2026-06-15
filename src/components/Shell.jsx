@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import theme from '../theme';
+import CaptureDrawer from './CaptureDrawer';
 
 // Adobe-style Experience Cloud waffle (3x3 dots)
 function AppSwitcherIcon() {
@@ -40,18 +41,6 @@ function NotificationIcon() {
         strokeLinejoin="round"
       />
       <path d="M6.8 14.2a1.4 1.4 0 0 0 2.4 0" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-// Researcher capture-console entry (discreet — opens /research/console)
-function ConsoleIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
-      <rect x="3" y="2.5" width="10" height="11" rx="1.4" stroke="currentColor" strokeWidth="1.2" />
-      <rect x="5.6" y="1.4" width="4.8" height="2.4" rx="0.8" stroke="currentColor" strokeWidth="1.2" />
-      <path d="M5.4 7l1.3 1.3L9.4 5.6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M5.4 11h5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
     </svg>
   );
 }
@@ -195,6 +184,7 @@ export default function Shell({
   children,
 }) {
   const navigate = useNavigate();
+  const [captureOpen, setCaptureOpen] = useState(false);
   return (
     <div
       style={{
@@ -243,11 +233,33 @@ export default function Shell({
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <button
+            onClick={() => setCaptureOpen(true)}
+            title="Capture a control-dial response"
+            onMouseEnter={(e) => { e.currentTarget.style.background = '#E9DEFA'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = '#F1EAFB'; }}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              height: 30,
+              padding: '0 13px',
+              borderRadius: 999,
+              border: '1px solid #CDB8F0',
+              background: '#F1EAFB',
+              color: '#7A4DD0',
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+              transition: `background ${theme.motion.fast}`,
+            }}
+          >
+            <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#7A4DD0' }} />
+            Capture
+          </button>
           <ShellIconButton label="Research plan" onClick={() => navigate('/research')}>
             <BookIcon />
-          </ShellIconButton>
-          <ShellIconButton label="Capture console" onClick={() => navigate('/research/console')}>
-            <ConsoleIcon />
           </ShellIconButton>
           <ShellIconButton label="Session report" onClick={() => navigate('/report')}>
             <ReportIcon />
@@ -373,6 +385,8 @@ export default function Shell({
       >
         {children}
       </div>
+
+      <CaptureDrawer open={captureOpen} onClose={() => setCaptureOpen(false)} />
     </div>
   );
 }
