@@ -3,7 +3,7 @@ import theme from '../theme';
 import Shell from '../components/Shell';
 import { getSessionData, resetSession, getAllSessions, clearAllSessions } from '../tracking/sessionTracker';
 
-// Researcher view — a STUDY-LEVEL report aggregated across every stored session.
+// Researcher view: a STUDY-LEVEL report aggregated across every stored session.
 // It leads with the signals that actually answer the research question ("does AI
 // generation feel trustworthy and appropriately controllable?"): sentiment,
 // what people did with AI output (accept / edit / reject), completion, and where
@@ -57,7 +57,7 @@ const EVENT_TYPE_STYLE = {
   backtrack: { dot: '#C16C0F', label: 'Backtrack' },
 };
 
-// AI-output decisions → accept / edit / reject buckets for the trust metric.
+// AI-output decisions grouped into accept / edit / reject buckets for the trust metric.
 const ACCEPT_ACTIONS = new Set(['accept_section']);
 const EDIT_ACTIONS = new Set(['edit_section', 'body_text_changed']);
 const REJECT_ACTIONS = new Set(['reject_section']);
@@ -162,9 +162,9 @@ function aggregate(sessions) {
 function Stat({ label, value, hint, accent }) {
   return (
     <div style={{ background: '#FFFFFF', border: `1px solid ${theme.color.border}`, borderRadius: theme.radius.lg, padding: '18px 20px' }}>
-      <div style={{ fontSize: 11, color: theme.color.textMuted, fontWeight: 600, letterSpacing: 0.5, textTransform: 'uppercase' }}>{label}</div>
-      <div style={{ fontSize: 28, fontWeight: 600, marginTop: 6, letterSpacing: -0.4, color: accent || theme.color.text }}>{value}</div>
-      {hint && <div style={{ fontSize: 12, color: theme.color.textMuted, marginTop: 4, lineHeight: 1.45 }}>{hint}</div>}
+      <div style={{ fontSize: 13, color: theme.color.textMuted, fontWeight: 600, letterSpacing: 0.5, textTransform: 'uppercase' }}>{label}</div>
+      <div style={{ fontSize: 30, fontWeight: 600, marginTop: 6, letterSpacing: -0.4, color: accent || theme.color.text }}>{value}</div>
+      {hint && <div style={{ fontSize: 14, color: theme.color.textMuted, marginTop: 4, lineHeight: 1.45 }}>{hint}</div>}
     </div>
   );
 }
@@ -172,8 +172,8 @@ function Stat({ label, value, hint, accent }) {
 function Card({ title, caption, children }) {
   return (
     <section className="report-card" style={{ marginBottom: 32 }}>
-      <h2 style={{ fontSize: 18, fontWeight: 600, margin: '0 0 4px', letterSpacing: -0.2 }}>{title}</h2>
-      {caption && <p style={{ fontSize: 13, color: theme.color.textMuted, margin: '0 0 14px', lineHeight: 1.5, maxWidth: 640 }}>{caption}</p>}
+      <h2 style={{ fontSize: 20, fontWeight: 600, margin: '0 0 4px', letterSpacing: -0.2 }}>{title}</h2>
+      {caption && <p style={{ fontSize: 15, color: theme.color.textMuted, margin: '0 0 14px', lineHeight: 1.5, maxWidth: 640 }}>{caption}</p>}
       <div style={{ background: '#FFFFFF', border: `1px solid ${theme.color.border}`, borderRadius: theme.radius.lg, padding: '20px 22px' }}>
         {children}
       </div>
@@ -184,7 +184,7 @@ function Card({ title, caption, children }) {
 // A labelled, segmented horizontal bar with a legend underneath.
 function SegmentBar({ segments, total }) {
   if (!total) {
-    return <div style={{ fontSize: 13, color: theme.color.textMuted }}>No data captured yet.</div>;
+    return <div style={{ fontSize: 15, color: theme.color.textMuted }}>No data captured yet.</div>;
   }
   return (
     <>
@@ -203,8 +203,8 @@ function SegmentBar({ segments, total }) {
         {segments.map((s) => (
           <div key={s.label} style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
             <span style={{ width: 10, height: 10, borderRadius: 3, background: s.color, flexShrink: 0, alignSelf: 'center' }} />
-            <span style={{ fontSize: 13, fontWeight: 600, color: theme.color.text }}>{s.label}</span>
-            <span style={{ fontSize: 13, color: theme.color.textMuted }}>
+            <span style={{ fontSize: 15, fontWeight: 600, color: theme.color.text }}>{s.label}</span>
+            <span style={{ fontSize: 15, color: theme.color.textMuted }}>
               {s.value} · {pct(s.value, total)}%
             </span>
           </div>
@@ -219,7 +219,7 @@ function SegmentBar({ segments, total }) {
 function SessionRow({ session }) {
   const [open, setOpen] = useState(false);
   const published = (session.aiInteractions || []).some((a) => a.action === 'publish_version');
-  const sentiment = (session.surveyResponses || []).map((r) => r.answer).join(', ') || '—';
+  const sentiment = (session.surveyResponses || []).map((r) => r.answer).join(', ') || 'no answer';
   const tl = session.timeline || [];
   return (
     <div style={{ borderBottom: `1px solid ${theme.color.border}` }}>
@@ -239,33 +239,33 @@ function SessionRow({ session }) {
           fontFamily: 'inherit',
         }}
       >
-        <span style={{ transform: open ? 'rotate(90deg)' : 'none', transition: 'transform 120ms', color: theme.color.textMuted, fontSize: 12 }}>▶</span>
-        <span style={{ fontSize: 12.5, fontFamily: 'monospace', color: theme.color.textMuted }}>{session.sessionId}</span>
-        <span style={{ fontSize: 13, color: theme.color.text }}>{sentiment}</span>
-        <span style={{ fontSize: 12.5, color: theme.color.textMuted }}>{formatDuration(session.durationSeconds)}</span>
-        <span style={{ fontSize: 12, fontWeight: 600, color: published ? theme.color.success : theme.color.textSubtle }}>
+        <span style={{ transform: open ? 'rotate(90deg)' : 'none', transition: 'transform 120ms', color: theme.color.textMuted, fontSize: 14 }}>▶</span>
+        <span style={{ fontSize: 14.5, fontFamily: 'monospace', color: theme.color.textMuted }}>{session.sessionId}</span>
+        <span style={{ fontSize: 15, color: theme.color.text }}>{sentiment}</span>
+        <span style={{ fontSize: 14.5, color: theme.color.textMuted }}>{formatDuration(session.durationSeconds)}</span>
+        <span style={{ fontSize: 14, fontWeight: 600, color: published ? theme.color.success : theme.color.textSubtle }}>
           {published ? 'Published' : 'Incomplete'}
         </span>
       </button>
       {open && (
         <div style={{ padding: '4px 14px 16px' }}>
           {tl.length === 0 ? (
-            <div style={{ fontSize: 12.5, color: theme.color.textMuted, padding: 8 }}>No events.</div>
+            <div style={{ fontSize: 14.5, color: theme.color.textMuted, padding: 8 }}>No events.</div>
           ) : (
             tl.map((event, i) => {
               const style = EVENT_TYPE_STYLE[event.type] || { dot: '#C8C8C8', label: event.type };
               const elapsed = ((event.at - session.startedAt) / 1000).toFixed(1);
               return (
                 <div key={i} style={{ display: 'grid', gridTemplateColumns: '64px 90px 1fr', gap: 12, padding: '6px 0', alignItems: 'baseline' }}>
-                  <span style={{ fontSize: 11, fontFamily: 'monospace', color: theme.color.textSubtle }}>+{elapsed}s</span>
+                  <span style={{ fontSize: 13, fontFamily: 'monospace', color: theme.color.textSubtle }}>+{elapsed}s</span>
                   <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     <span style={{ width: 6, height: 6, borderRadius: '50%', background: style.dot }} />
-                    <span style={{ fontSize: 10.5, color: theme.color.textMuted, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.3 }}>{style.label}</span>
+                    <span style={{ fontSize: 12.5, color: theme.color.textMuted, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.3 }}>{style.label}</span>
                   </span>
-                  <span style={{ fontSize: 12.5, color: theme.color.text }}>
+                  <span style={{ fontSize: 14.5, color: theme.color.text }}>
                     {event.type === 'page_visit' && <>Visited <strong>{pageLabel(event.page)}</strong></>}
                     {event.type === 'click' && <span style={{ color: theme.color.textMuted }}>{event.label} <span style={{ color: theme.color.textSubtle }}>· {pageLabel(event.page)}</span></span>}
-                    {event.type === 'ai_interaction' && <>AI: <strong>{event.label}</strong>{event.meta?.section ? <span style={{ color: theme.color.textMuted }}> — {event.meta.section}</span> : null}</>}
+                    {event.type === 'ai_interaction' && <>AI: <strong>{event.label}</strong>{event.meta?.section ? <span style={{ color: theme.color.textMuted }}> · {event.meta.section}</span> : null}</>}
                     {event.type === 'survey_response' && <>Survey: <strong>{event.meta?.answer}</strong></>}
                     {event.type === 'path_chosen' && <>Chose path <strong>{event.label}</strong></>}
                     {event.type === 'backtrack' && <>Backtracked to <strong>{pageLabel(event.page)}</strong></>}
@@ -287,7 +287,7 @@ const ghostBtnStyle = {
   border: `1px solid ${theme.color.borderStrong}`,
   borderRadius: theme.radius.md,
   padding: '8px 14px',
-  fontSize: 13,
+  fontSize: 15,
   fontWeight: 500,
   cursor: 'pointer',
   fontFamily: 'inherit',
@@ -321,18 +321,18 @@ export default function Report() {
   const completionRate = pct(a.published, a.participants);
 
   return (
-    <Shell breadcrumbs={['Research Ops', 'Study Summary']}>
+    <Shell breadcrumbs={['Research', 'Study Summary']}>
       <main style={{ flex: 1, overflowY: 'auto', background: '#FAFAFA', color: theme.color.text, padding: '48px 56px 80px' }}>
         <style>{`@media print { .no-print { display: none !important; } .report-card { break-inside: avoid; } body { background: #FFF; } }`}</style>
         <div style={{ maxWidth: 980, margin: '0 auto' }}>
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16, marginBottom: 8 }}>
           <div>
-            <div style={{ fontSize: 11, color: theme.color.textMuted, fontWeight: 600, letterSpacing: 0.6, textTransform: 'uppercase', marginBottom: 8 }}>
+            <div style={{ fontSize: 13, color: theme.color.textMuted, fontWeight: 600, letterSpacing: 0.6, textTransform: 'uppercase', marginBottom: 8 }}>
               Researcher View · Internal
             </div>
-            <h1 style={{ fontSize: 32, fontWeight: 600, margin: 0, letterSpacing: -0.5 }}>Study Summary</h1>
-            <div style={{ fontSize: 13, color: theme.color.textMuted, marginTop: 6 }}>
+            <h1 style={{ fontSize: 34, fontWeight: 600, margin: 0, letterSpacing: -0.5 }}>Study Summary</h1>
+            <div style={{ fontSize: 15, color: theme.color.textMuted, marginTop: 6 }}>
               AI version &amp; amenity generation · {a.participants} participant{a.participants === 1 ? '' : 's'} · {a.surveyTotal} feedback response{a.surveyTotal === 1 ? '' : 's'}
               <span style={{ margin: '0 8px', color: '#C8C8C8' }}>·</span>
               <span style={{ color: theme.color.success }}>● live</span>
@@ -341,7 +341,7 @@ export default function Report() {
           <div className="no-print" style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
             <button
               onClick={() => downloadFile(`uxr-feedback-${getAllSessions().length}p.csv`, feedbackCSV(getAllSessions()), 'text/csv;charset=utf-8')}
-              style={{ background: theme.color.primary, border: 'none', borderRadius: theme.radius.md, padding: '8px 14px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', color: '#FFFFFF' }}
+              style={{ background: theme.color.primary, border: 'none', borderRadius: theme.radius.md, padding: '8px 14px', fontSize: 15, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', color: '#FFFFFF' }}
             >
               Download CSV
             </button>
@@ -367,8 +367,8 @@ export default function Report() {
         <div style={{ height: 1, background: theme.color.border, margin: '24px 0 30px' }} />
 
         {a.participants === 0 ? (
-          <div style={{ background: '#FFFFFF', border: `1px solid ${theme.color.border}`, borderRadius: theme.radius.lg, padding: '40px 24px', textAlign: 'center', color: theme.color.textMuted, fontSize: 14 }}>
-            No sessions recorded yet. Open the prototype and walk through the flow — results land here automatically.
+          <div style={{ background: '#FFFFFF', border: `1px solid ${theme.color.border}`, borderRadius: theme.radius.lg, padding: '40px 24px', textAlign: 'center', color: theme.color.textMuted, fontSize: 16 }}>
+            No sessions recorded yet. Open the prototype and walk through the flow. Results land here automatically.
           </div>
         ) : (
           <>
@@ -376,14 +376,14 @@ export default function Report() {
             <div className="report-card" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 34 }}>
               <Stat label="Participants" value={a.participants} hint={`${a.generated} generated a version`} />
               <Stat label="Completion" value={`${completionRate}%`} hint={`${a.published} reached Publish`} accent={completionRate >= 60 ? theme.color.success : undefined} />
-              <Stat label="Edit rate" value={a.decisionTotal ? `${editRate}%` : '—'} hint="AI output changed before accepting" accent={editRate > 50 ? '#E0892F' : undefined} />
+              <Stat label="Edit rate" value={a.decisionTotal ? `${editRate}%` : '–'} hint="AI output changed before accepting" accent={editRate > 50 ? '#E0892F' : undefined} />
               <Stat label="Avg. time on task" value={formatDuration(a.avgDuration)} hint={`${a.totalBacktracks} backtrack${a.totalBacktracks === 1 ? '' : 's'} total`} />
             </div>
 
-            {/* Sentiment — the hero signal */}
+            {/* Sentiment: the hero signal */}
             <Card
               title="How did AI generation feel?"
-              caption="Micro-survey responses pooled across every participant — the core attitudinal read on whether the automation lands."
+              caption="Micro-survey responses pooled across every participant, the core attitudinal read on whether the automation lands."
             >
               <SegmentBar segments={sentimentSegments} total={a.surveyTotal} />
             </Card>
@@ -395,7 +395,7 @@ export default function Report() {
             >
               <SegmentBar segments={decisionSegments} total={a.decisionTotal} />
               {a.amenityTotal > 0 && (
-                <div style={{ marginTop: 18, paddingTop: 16, borderTop: `1px solid ${theme.color.borderSoft}`, fontSize: 13, color: theme.color.textMuted }}>
+                <div style={{ marginTop: 18, paddingTop: 16, borderTop: `1px solid ${theme.color.borderSoft}`, fontSize: 15, color: theme.color.textMuted }}>
                   Amenity acceptance: <strong style={{ color: theme.color.text }}>{a.amenityAdded} of {a.amenityTotal}</strong> AI-suggested amenities ({pct(a.amenityAdded, a.amenityTotal)}%) were kept.
                 </div>
               )}
@@ -407,7 +407,7 @@ export default function Report() {
               caption="Total dwell per step across all participants, with how often each step was revisited. Long dwell plus backtracks flags friction worth a closer look."
             >
               {a.dwellRows.length === 0 ? (
-                <div style={{ fontSize: 13, color: theme.color.textMuted }}>No page activity captured yet.</div>
+                <div style={{ fontSize: 15, color: theme.color.textMuted }}>No page activity captured yet.</div>
               ) : (
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <tbody>
@@ -415,15 +415,15 @@ export default function Report() {
                       const max = a.dwellRows[0].sec || 1;
                       return (
                         <tr key={page} style={{ borderBottom: `1px solid ${theme.color.borderSoft}` }}>
-                          <td style={{ padding: '11px 12px 11px 0', fontSize: 13, fontWeight: 500, width: 230 }}>{pageLabel(page)}</td>
+                          <td style={{ padding: '11px 12px 11px 0', fontSize: 15, fontWeight: 500, width: 230 }}>{pageLabel(page)}</td>
                           <td style={{ padding: '11px 12px', width: '100%' }}>
                             <div style={{ background: '#F0F0F0', height: 6, borderRadius: 3, overflow: 'hidden' }}>
                               <div style={{ width: `${(sec / max) * 100}%`, height: '100%', background: theme.color.primary }} />
                             </div>
                           </td>
-                          <td style={{ padding: '11px 0 11px 12px', fontSize: 12.5, color: theme.color.textMuted, textAlign: 'right', whiteSpace: 'nowrap', width: 80 }}>{formatDuration(sec)}</td>
-                          <td style={{ padding: '11px 0 11px 16px', fontSize: 12, color: backtracks ? '#C16C0F' : theme.color.textSubtle, textAlign: 'right', whiteSpace: 'nowrap', width: 90 }}>
-                            {backtracks ? `${backtracks} revisit${backtracks === 1 ? '' : 's'}` : '—'}
+                          <td style={{ padding: '11px 0 11px 12px', fontSize: 14.5, color: theme.color.textMuted, textAlign: 'right', whiteSpace: 'nowrap', width: 80 }}>{formatDuration(sec)}</td>
+                          <td style={{ padding: '11px 0 11px 16px', fontSize: 14, color: backtracks ? '#C16C0F' : theme.color.textSubtle, textAlign: 'right', whiteSpace: 'nowrap', width: 90 }}>
+                            {backtracks ? `${backtracks} revisit${backtracks === 1 ? '' : 's'}` : '–'}
                           </td>
                         </tr>
                       );
@@ -436,9 +436,9 @@ export default function Report() {
             {/* Per-session deep dive */}
             <Card
               title="Sessions"
-              caption="Each participant's run. Expand a row to replay their exact path — useful when a number above raises a question."
+              caption="Each participant's run. Expand a row to replay their exact path, useful when a number above raises a question."
             >
-              <div style={{ display: 'grid', gridTemplateColumns: '18px 150px 1fr 90px 90px', gap: 12, padding: '0 14px 8px', fontSize: 11, fontWeight: 600, color: theme.color.textSubtle, textTransform: 'uppercase', letterSpacing: 0.4 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '18px 150px 1fr 90px 90px', gap: 12, padding: '0 14px 8px', fontSize: 13, fontWeight: 600, color: theme.color.textSubtle, textTransform: 'uppercase', letterSpacing: 0.4 }}>
                 <span />
                 <span>Session</span>
                 <span>Sentiment</span>
@@ -454,7 +454,7 @@ export default function Report() {
           </>
         )}
 
-        <div style={{ marginTop: 28, fontSize: 11, color: theme.color.textSubtle, textAlign: 'center' }}>
+        <div style={{ marginTop: 28, fontSize: 13, color: theme.color.textSubtle, textAlign: 'center' }}>
           Sessions persist in this browser via local storage. Export the CSV/JSON to share or aggregate elsewhere.
         </div>
         </div>
