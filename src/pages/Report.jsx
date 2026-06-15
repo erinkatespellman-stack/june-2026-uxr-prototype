@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import theme from '../theme';
 import Shell from '../components/Shell';
 import { getSessionData, resetSession, getAllSessions, clearAllSessions } from '../tracking/sessionTracker';
-import { useDialResponses, MOMENTS, DIAL_POSITIONS, positionLabel } from '../store/dialStore';
+import { useDialResponses, useFollowups, MOMENTS, DIAL_POSITIONS, DRIVERS, FOLLOWUP_QUESTIONS, positionLabel, driverLabel } from '../store/dialStore';
 
 // Colour per dial position, reused by the control-dial bars.
 const POSITION_COLOR = { less: '#2F7DC4', 'just-right': theme.color.success, more: '#7A4DD0' };
@@ -222,14 +222,21 @@ function SegmentBar({ segments, total }) {
 
 // ──────── control dial (research plan §5) ────────
 
-function ControlDialBody({ dial }) {
-  if (!dial.length) {
+function ControlDialBody({ dial, followups }) {
+  if (!dial.length && !followups.length) {
     return (
       <div style={{ fontSize: 15, color: theme.color.textMuted, lineHeight: 1.5 }}>
-        No dial answers captured yet. Record them in the Capture Console as you run interviews and they appear here.
+        No dial answers captured yet. Record them with the Capture button (top bar) as you run interviews and they appear here.
       </div>
     );
   }
+  // Driver tags aggregated across all participants' follow-ups.
+  const driverCounts = DRIVERS.map((d) => ({
+    ...d,
+    count: followups.filter((f) => (f.drivers || []).includes(d.key)).length,
+  })).filter((d) => d.count > 0).sort((a, b) => b.count - a.count);
+  const driverMax = driverCounts.length ? driverCounts[0].count : 0;
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 26 }}>
       {MOMENTS.map((m) => {
@@ -276,18 +283,37 @@ function ControlDialBody({ dial }) {
           </div>
         );
       })}
+
+      {driverCounts.length > 0 && (
+        <div>
+          <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 12 }}>What's driving it</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {driverCounts.map((d) => (
+              <div key={d.key} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <span style={{ width: 120, fontSize: 14, color: theme.color.text, flexShrink: 0 }}>{d.label}</span>
+                <div style={{ flex: 1, height: 8, background: '#F0F0F0', borderRadius: 4, overflow: 'hidden' }}>
+                  <div style={{ width: `${(d.count / driverMax) * 100}%`, height: '100%', background: '#7A4DD0', borderRadius: 4 }} />
+                </div>
+                <span style={{ width: 28, textAlign: 'right', fontSize: 14, fontWeight: 600, color: theme.color.textMuted, flexShrink: 0 }}>{d.count}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
 // ──────── per-session deep dive ────────
 
-function SessionRow({ session, dial }) {
+function SessionRow({ session, dial, followups }) {
   const [open, setOpen] = useState(false);
   const published = (session.aiInteractions || []).some((a) => a.action === 'publish_version');
   const sentiment = (session.surveyResponses || []).map((r) => r.answer).join(', ') || 'no answer';
   const tl = session.timeline || [];
   const myDial = session.participant ? dial.filter((r) => r.participant === session.participant && r.desired) : [];
+  const myFollow = session.participant ? (followups || []).find((f) => f.participant === session.participant) : null;
+  const myAnswers = myFollow ? FOLLOWUP_QUESTIONS.filter((q) => (myFollow[q.key] || '').trim()) : [];
   return (
     <div style={{ borderBottom: `1px solid ${theme.color.border}` }}>
       <button
@@ -330,6 +356,21 @@ function SessionRow({ session, dial }) {
                   {(r.moment === 'amenities' ? 'Amenities' : 'Versions')}: {positionLabel(r.desired)}
                   {r.current && ` (feels ${positionLabel(r.current).toLowerCase()} today)`}
                 </span>
+              ))}
+            </div>
+          )}
+          {myFollow && (myFollow.drivers?.length > 0 || myAnswers.length > 0) && (
+            <div style={{ marginBottom: 12, padding: '10px 12px', background: '#FAFAFA', borderRadius: theme.radius.md, fontSize: 13.5, color: theme.color.text, lineHeight: 1.6 }}>
+              {myFollow.drivers?.length > 0 && (
+                <div style={{ marginBottom: myAnswers.length ? 8 : 0 }}>
+                  <strong style={{ color: theme.color.textMuted }}>Drivers:</strong>{' '}
+                  {myFollow.drivers.map((d) => driverLabel(d)).join(' · ')}
+                </div>
+              )}
+              {myAnswers.map((q) => (
+                <div key={q.key} style={{ marginTop: 4 }}>
+                  <span style={{ color: theme.color.textMuted }}>{q.label}</span> {myFollow[q.key]}
+                </div>
               ))}
             </div>
           )}
@@ -381,6 +422,7 @@ const ghostBtnStyle = {
 export default function Report() {
   const navigate = useNavigate();
   const dial = useDialResponses();
+  const followups = useFollowups();
   const [sessions, setSessions] = useState(() => getAllSessions());
 
   useEffect(() => {
@@ -437,7 +479,7 @@ export default function Report() {
             >
               Download CSV
             </button>
-            <button onClick={() => downloadFile('uxr-study-data.json', JSON.stringify({ sessions: getAllSessions(), dial }, null, 2), 'application/json')} style={ghostBtnStyle}>
+            <button onClick={() => downloadFile('uxr-study-data.json', JSON.stringify({ sessions: getAllSessions(), dial, followups }, null, 2), 'application/json')} style={ghostBtnStyle}>
               Export JSON
             </button>
             <button onClick={() => window.print()} style={ghostBtnStyle}>Print</button>
@@ -485,7 +527,7 @@ export default function Report() {
               title="The control dial: how much AI do people want?"
               caption="Where participants set the dial for each AI moment, captured in interviews. The gap between where they'd set it and how it feels today is the signal for the roadmap."
             >
-              <ControlDialBody dial={dial} />
+              <ControlDialBody dial={dial} followups={followups} />
             </Card>
 
             {/* Trust behaviour */}
@@ -547,7 +589,7 @@ export default function Report() {
               </div>
               <div style={{ borderTop: `1px solid ${theme.color.border}` }}>
                 {[...sessions].reverse().map((s) => (
-                  <SessionRow key={s.sessionId} session={s} dial={dial} />
+                  <SessionRow key={s.sessionId} session={s} dial={dial} followups={followups} />
                 ))}
               </div>
             </Card>

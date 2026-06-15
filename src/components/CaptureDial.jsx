@@ -5,7 +5,11 @@ import { setParticipant, getParticipant, getSessionId } from '../tracking/sessio
 import {
   MOMENTS,
   DIAL_POSITIONS,
+  DRIVERS,
+  FOLLOWUP_QUESTIONS,
   addDialResponse,
+  saveFollowup,
+  getFollowup,
   useDialResponses,
   momentLabel,
   positionLabel,
@@ -13,8 +17,8 @@ import {
 
 // The control-dial capture form (research plan §5). Used both as the full
 // /research/console page and inside the slide-in Capture drawer, so a researcher
-// can record answers without leaving the participant's screen. Self-contained:
-// names the participant and writes dial answers to the dialStore → report.
+// can record answers without leaving the participant's screen. Captures the dial
+// per AI moment plus the optional §5 follow-ups and §2 driver tags.
 
 function SegButton({ options, value, onChange }) {
   return (
@@ -52,7 +56,31 @@ function FieldLabel({ children }) {
   return <div style={{ fontSize: 13.5, fontWeight: 600, color: theme.color.text, marginBottom: 7 }}>{children}</div>;
 }
 
+const textareaStyle = {
+  width: '100%',
+  padding: '9px 11px',
+  border: `1px solid ${theme.color.borderStrong}`,
+  borderRadius: theme.radius.md,
+  fontSize: 14.5,
+  fontFamily: 'inherit',
+  resize: 'vertical',
+  outline: 'none',
+  color: theme.color.text,
+  lineHeight: 1.5,
+  boxSizing: 'border-box',
+};
+
 const emptyMoment = () => ({ desired: null, current: null, why: '' });
+const emptyFollow = () => ({ drivers: [], gate: '', trustUnlock: '', worstCase: '', timeSaved: '' });
+
+function loadFollow(name) {
+  const existing = name ? getFollowup(name) : null;
+  return existing ? { ...emptyFollow(), ...existing } : emptyFollow();
+}
+
+function hasFollowContent(f) {
+  return f.drivers.length > 0 || FOLLOWUP_QUESTIONS.some((q) => (f[q.key] || '').trim());
+}
 
 export default function CaptureDial({ onDone }) {
   const navigate = useNavigate();
@@ -61,6 +89,8 @@ export default function CaptureDial({ onDone }) {
   const [nameInput, setNameInput] = useState(getParticipant() || '');
   const [participant, setParticipantState] = useState(getParticipant());
   const [forms, setForms] = useState(() => ({ amenities: emptyMoment(), versions: emptyMoment() }));
+  const [follow, setFollow] = useState(() => loadFollow(getParticipant()));
+  const [followOpen, setFollowOpen] = useState(false);
   const [toast, setToast] = useState('');
 
   const flash = (msg) => { setToast(msg); window.setTimeout(() => setToast(''), 2200); };
@@ -70,6 +100,7 @@ export default function CaptureDial({ onDone }) {
     if (!n) return;
     setParticipant(n);
     setParticipantState(n);
+    setFollow(loadFollow(n)); // pull any follow-ups already captured for them
     flash(`Now interviewing ${n}`);
   };
 
@@ -77,22 +108,29 @@ export default function CaptureDial({ onDone }) {
     setForms((f) => ({ ...f, [moment]: { ...f[moment], [field]: value } }));
   };
 
+  const setFollowField = (field, value) => setFollow((f) => ({ ...f, [field]: value }));
+
+  const toggleDriver = (key) => {
+    setFollow((f) => ({ ...f, drivers: f.drivers.includes(key) ? f.drivers.filter((d) => d !== key) : [...f.drivers, key] }));
+  };
+
   const saveAnswers = () => {
     if (!participant) { flash('Set a participant first'); return; }
-    let saved = 0;
+    let savedDial = 0;
     MOMENTS.forEach((m) => {
       const form = forms[m.key];
       if (form.desired) {
         addDialResponse({ participant, sessionId: getSessionId(), moment: m.key, desired: form.desired, current: form.current, why: form.why, mode: 'moderated' });
-        saved += 1;
+        savedDial += 1;
       }
     });
-    if (saved === 0) { flash('Pick a dial position to save'); return; }
-    setForms({ amenities: emptyMoment(), versions: emptyMoment() });
+    const savedFollow = hasFollowContent(follow);
+    if (savedFollow) saveFollowup(participant, follow);
+    if (!savedDial && !savedFollow) { flash('Add a dial position or a follow-up'); return; }
+    setForms({ amenities: emptyMoment(), versions: emptyMoment() }); // follow-ups persist (one per participant)
     flash(`Saved for ${participant}`);
   };
 
-  // Most recent captures, newest first (kept short in the drawer).
   const captured = [...responses].reverse();
 
   return (
@@ -143,11 +181,69 @@ export default function CaptureDial({ onDone }) {
               onChange={(e) => setMomentField(m.key, 'why', e.target.value)}
               placeholder="Quote what they said…"
               rows={2}
-              style={{ width: '100%', padding: '9px 11px', border: `1px solid ${theme.color.borderStrong}`, borderRadius: theme.radius.md, fontSize: 14.5, fontFamily: 'inherit', resize: 'vertical', outline: 'none', color: theme.color.text, lineHeight: 1.5, boxSizing: 'border-box' }}
+              style={textareaStyle}
             />
           </div>
         );
       })}
+
+      {/* Optional follow-ups */}
+      <div style={{ border: `1px solid ${theme.color.border}`, borderRadius: theme.radius.lg, marginBottom: 18, overflow: 'hidden' }}>
+        <button
+          type="button"
+          onClick={() => setFollowOpen((v) => !v)}
+          style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#FAFAFA', border: 'none', padding: '12px 16px', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}
+        >
+          <span style={{ fontSize: 14, fontWeight: 600, color: theme.color.text }}>
+            Follow-ups <span style={{ color: theme.color.textMuted, fontWeight: 400 }}>(optional)</span>
+            {hasFollowContent(follow) && <span style={{ marginLeft: 8, color: '#7A4DD0', fontSize: 12, fontWeight: 600 }}>● filled</span>}
+          </span>
+          <span style={{ transform: followOpen ? 'rotate(90deg)' : 'none', transition: 'transform 120ms', color: theme.color.textMuted, fontSize: 13 }}>▶</span>
+        </button>
+        {followOpen && (
+          <div style={{ padding: '16px', borderTop: `1px solid ${theme.color.borderSoft}` }}>
+            <FieldLabel>What's driving their preference?</FieldLabel>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7, marginBottom: 16 }}>
+              {DRIVERS.map((d) => {
+                const on = follow.drivers.includes(d.key);
+                return (
+                  <button
+                    key={d.key}
+                    type="button"
+                    onClick={() => toggleDriver(d.key)}
+                    style={{
+                      border: `1px solid ${on ? '#7A4DD0' : theme.color.borderStrong}`,
+                      background: on ? '#F1EAFB' : '#FFFFFF',
+                      color: on ? '#7A4DD0' : theme.color.textMuted,
+                      borderRadius: 999,
+                      padding: '6px 13px',
+                      fontSize: 13.5,
+                      fontWeight: on ? 600 : 500,
+                      cursor: 'pointer',
+                      fontFamily: 'inherit',
+                      transition: `all ${theme.motion.fast}`,
+                    }}
+                  >
+                    {d.label}
+                  </button>
+                );
+              })}
+            </div>
+            {FOLLOWUP_QUESTIONS.map((q) => (
+              <div key={q.key} style={{ marginBottom: 14 }}>
+                <FieldLabel>{q.label}</FieldLabel>
+                <textarea
+                  value={follow[q.key]}
+                  onChange={(e) => setFollowField(q.key, e.target.value)}
+                  placeholder={q.placeholder}
+                  rows={2}
+                  style={textareaStyle}
+                />
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Save */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 4, flexWrap: 'wrap' }}>
