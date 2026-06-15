@@ -45,6 +45,17 @@ function NotificationIcon() {
   );
 }
 
+// Researcher dial-capture entry (opens the Capture drawer)
+function ClipboardIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
+      <rect x="3.5" y="3" width="9" height="11" rx="1.3" stroke="currentColor" strokeWidth="1.2" />
+      <rect x="5.8" y="1.8" width="4.4" height="2.4" rx="0.8" stroke="currentColor" strokeWidth="1.2" />
+      <path d="M5.8 7.4h4.4M5.8 10h2.8" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 // Researcher session-report entry (discreet — opens /report)
 function ReportIcon() {
   return (
@@ -233,33 +244,11 @@ export default function Shell({
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <button
-            onClick={() => setCaptureOpen(true)}
-            title="Capture a control-dial response"
-            onMouseEnter={(e) => { e.currentTarget.style.background = '#E9DEFA'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = '#F1EAFB'; }}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 6,
-              height: 30,
-              padding: '0 13px',
-              borderRadius: 999,
-              border: '1px solid #CDB8F0',
-              background: '#F1EAFB',
-              color: '#7A4DD0',
-              fontSize: 13,
-              fontWeight: 600,
-              cursor: 'pointer',
-              fontFamily: 'inherit',
-              transition: `background ${theme.motion.fast}`,
-            }}
-          >
-            <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#7A4DD0' }} />
-            Capture
-          </button>
           <ShellIconButton label="Research plan" onClick={() => navigate('/research')}>
             <BookIcon />
+          </ShellIconButton>
+          <ShellIconButton label="Capture a response" onClick={() => setCaptureOpen(true)}>
+            <ClipboardIcon />
           </ShellIconButton>
           <ShellIconButton label="Session report" onClick={() => navigate('/report')}>
             <ReportIcon />
