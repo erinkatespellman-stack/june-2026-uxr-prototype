@@ -42,8 +42,7 @@ export default function ResearchConsole() {
               </div>
               <h1 style={{ fontSize: 34, fontWeight: 600, margin: 0, letterSpacing: -0.5 }}>Capture Console</h1>
               <div style={{ fontSize: 15, color: theme.color.textMuted, marginTop: 6, lineHeight: 1.5 }}>
-                Set your mode and name the participant. During the session you can also capture from the{' '}
-                <strong style={{ color: '#7A4DD0' }}>Capture</strong> button in the top bar, without leaving their screen.
+                Keep this page open during the interview. Name the participant, then record their control-dial answers as they talk. Everything you save flows straight into the results.
               </div>
             </div>
             <button onClick={() => navigate('/report')} style={ghostBtn()}>View results →</button>

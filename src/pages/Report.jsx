@@ -419,6 +419,58 @@ const ghostBtnStyle = {
   color: theme.color.text,
 };
 
+function ShareIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden>
+      <path d="M8 10.2V2.4M8 2.4 5.3 5.1M8 2.4l2.7 2.7" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M3.5 8.4v4.1a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V8.4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function ChevronDownSm() {
+  return (
+    <svg width="11" height="11" viewBox="0 0 12 12" fill="none" aria-hidden>
+      <path d="M2.5 4.5 6 8l3.5-3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+// One "Share" control with a dropdown of export options, replacing the row of
+// CSV / JSON / Print buttons.
+function ShareMenu({ onCsv, onJson, onPrint }) {
+  const [open, setOpen] = useState(false);
+  const Item = ({ title, sub, onPick }) => (
+    <button
+      onMouseDown={() => { onPick(); setOpen(false); }}
+      onMouseEnter={(e) => { e.currentTarget.style.background = '#F4FAFF'; }}
+      onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+      style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 1, width: '100%', textAlign: 'left', background: 'transparent', border: 'none', borderRadius: theme.radius.md, padding: '9px 12px', cursor: 'pointer', fontFamily: 'inherit', transition: `background ${theme.motion.fast}` }}
+    >
+      <span style={{ fontSize: 14, fontWeight: 600, color: theme.color.text }}>{title}</span>
+      <span style={{ fontSize: 12, color: theme.color.textMuted }}>{sub}</span>
+    </button>
+  );
+  return (
+    <div style={{ position: 'relative' }}>
+      <button
+        onClick={() => setOpen((v) => !v)}
+        onBlur={() => setTimeout(() => setOpen(false), 150)}
+        style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: theme.color.primary, border: 'none', borderRadius: theme.radius.md, padding: '8px 16px', fontSize: 15, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', color: '#FFFFFF' }}
+      >
+        <ShareIcon /> Share <ChevronDownSm />
+      </button>
+      {open && (
+        <div style={{ position: 'absolute', top: 42, right: 0, width: 236, background: '#FFFFFF', border: `1px solid ${theme.color.border}`, borderRadius: theme.radius.lg, boxShadow: theme.shadow.overlay, padding: 6, zIndex: 30 }}>
+          <Item title="Download CSV" sub="Feedback responses (spreadsheet)" onPick={onCsv} />
+          <Item title="Export JSON" sub="Full study data" onPick={onJson} />
+          <Item title="Print / Save as PDF" sub="Formatted report" onPick={onPrint} />
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function Report() {
   const navigate = useNavigate();
   const dial = useDialResponses();
@@ -473,16 +525,11 @@ export default function Report() {
             >
               Capture console →
             </button>
-            <button
-              onClick={() => downloadFile(`uxr-feedback-${getAllSessions().length}p.csv`, feedbackCSV(getAllSessions()), 'text/csv;charset=utf-8')}
-              style={{ background: theme.color.primary, border: 'none', borderRadius: theme.radius.md, padding: '8px 14px', fontSize: 15, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', color: '#FFFFFF' }}
-            >
-              Download CSV
-            </button>
-            <button onClick={() => downloadFile('uxr-study-data.json', JSON.stringify({ sessions: getAllSessions(), dial, followups }, null, 2), 'application/json')} style={ghostBtnStyle}>
-              Export JSON
-            </button>
-            <button onClick={() => window.print()} style={ghostBtnStyle}>Print</button>
+            <ShareMenu
+              onCsv={() => downloadFile(`uxr-feedback-${getAllSessions().length}p.csv`, feedbackCSV(getAllSessions()), 'text/csv;charset=utf-8')}
+              onJson={() => downloadFile('uxr-study-data.json', JSON.stringify({ sessions: getAllSessions(), dial, followups }, null, 2), 'application/json')}
+              onPrint={() => window.print()}
+            />
             <button
               onClick={() => { if (window.confirm('Start a fresh session? Stored history is kept.')) { resetSession(); setSessions(getAllSessions()); } }}
               style={ghostBtnStyle}

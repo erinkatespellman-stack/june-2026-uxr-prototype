@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import theme from '../theme';
-import CaptureDrawer from './CaptureDrawer';
 
 // Adobe-style Experience Cloud waffle (3x3 dots)
 function AppSwitcherIcon() {
@@ -41,17 +40,6 @@ function NotificationIcon() {
         strokeLinejoin="round"
       />
       <path d="M6.8 14.2a1.4 1.4 0 0 0 2.4 0" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-// Researcher dial-capture entry (opens the Capture drawer)
-function ClipboardIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
-      <rect x="3.5" y="3" width="9" height="11" rx="1.3" stroke="currentColor" strokeWidth="1.2" />
-      <rect x="5.8" y="1.8" width="4.4" height="2.4" rx="0.8" stroke="currentColor" strokeWidth="1.2" />
-      <path d="M5.8 7.4h4.4M5.8 10h2.8" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
     </svg>
   );
 }
@@ -195,7 +183,6 @@ export default function Shell({
   children,
 }) {
   const navigate = useNavigate();
-  const [captureOpen, setCaptureOpen] = useState(false);
   return (
     <div
       style={{
@@ -246,9 +233,6 @@ export default function Shell({
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <ShellIconButton label="Research plan" onClick={() => navigate('/research')}>
             <BookIcon />
-          </ShellIconButton>
-          <ShellIconButton label="Capture a response" onClick={() => setCaptureOpen(true)}>
-            <ClipboardIcon />
           </ShellIconButton>
           <ShellIconButton label="Session report" onClick={() => navigate('/report')}>
             <ReportIcon />
@@ -374,8 +358,6 @@ export default function Shell({
       >
         {children}
       </div>
-
-      <CaptureDrawer open={captureOpen} onClose={() => setCaptureOpen(false)} />
     </div>
   );
 }
