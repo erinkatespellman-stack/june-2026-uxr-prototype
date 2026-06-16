@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import theme from '../theme';
 import Shell from '../components/Shell';
 import { getSessionData, resetSession, getAllSessions, clearAllSessions } from '../tracking/sessionTracker';
-import { useDialResponses, useFollowups, MOMENTS, DIAL_POSITIONS, DRIVERS, FOLLOWUP_QUESTIONS, positionLabel, driverLabel } from '../store/dialStore';
+import { useDialResponses, useFollowups, MOMENTS, DIAL_POSITIONS, DRIVERS, FOLLOWUP_QUESTIONS, WOULD_USE, FREQUENCY, EFFORT_WORTH, positionLabel, driverLabel } from '../store/dialStore';
 
 // Colour per dial position, reused by the control-dial bars.
 const POSITION_COLOR = { less: '#2F7DC4', 'just-right': theme.color.success, more: '#7A4DD0' };
@@ -216,6 +216,66 @@ function SegmentBar({ segments, total }) {
         ))}
       </div>
     </>
+  );
+}
+
+// ──────── is versioning worth it? (research plan pillar 1) ────────
+
+const WORTH_COLOR = { yes: theme.color.success, maybe: '#E0892F', no: '#A1233B', worth: theme.color.success, depends: '#E0892F', 'not-worth': '#A1233B' };
+
+function VersioningBody({ followups }) {
+  const rows = followups.filter((f) => f.wouldUse || f.frequency || f.effortWorth || (f.versioningWhy || '').trim());
+  if (!rows.length) {
+    return (
+      <div style={{ fontSize: 15, color: theme.color.textMuted, lineHeight: 1.5 }}>
+        No versioning answers captured yet. Ask "would you use this, how often, and is it worth the effort?" in the console and they appear here.
+      </div>
+    );
+  }
+  const useTotal = rows.filter((r) => r.wouldUse).length;
+  const useSeg = WOULD_USE.map((o) => ({ label: o.label, value: rows.filter((r) => r.wouldUse === o.key).length, color: WORTH_COLOR[o.key] }));
+  const effortTotal = rows.filter((r) => r.effortWorth).length;
+  const effortSeg = EFFORT_WORTH.map((o) => ({ label: o.label, value: rows.filter((r) => r.effortWorth === o.key).length, color: WORTH_COLOR[o.key] }));
+  const freq = FREQUENCY.map((o) => ({ ...o, count: rows.filter((r) => r.frequency === o.key).length })).filter((o) => o.count > 0);
+  const whys = rows.filter((r) => (r.versioningWhy || '').trim());
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+      {useTotal > 0 && (
+        <div>
+          <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 12 }}>Would they use it?</div>
+          <SegmentBar segments={useSeg} total={useTotal} />
+        </div>
+      )}
+      {effortTotal > 0 && (
+        <div>
+          <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 12 }}>Is the effort worth it?</div>
+          <SegmentBar segments={effortSeg} total={effortTotal} />
+        </div>
+      )}
+      {freq.length > 0 && (
+        <div>
+          <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 10 }}>How often they'd use it</div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 18px' }}>
+            {freq.map((o) => (
+              <span key={o.key} style={{ fontSize: 14, color: theme.color.text }}>
+                {o.label} <strong style={{ color: theme.color.textMuted }}>· {o.count}</strong>
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+      {whys.length > 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {whys.map((r) => (
+            <div key={r.participant} style={{ fontSize: 14.5, color: theme.color.text, lineHeight: 1.5, paddingLeft: 12, borderLeft: '3px solid #CDB8F0' }}>
+              “{r.versioningWhy}”
+              <span style={{ color: theme.color.textSubtle }}> · {r.participant || 'anon'}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -547,6 +607,14 @@ export default function Report() {
               <Stat label="Edit rate" value={a.decisionTotal ? `${editRate}%` : '–'} hint="AI output changed before accepting" accent={editRate > 50 ? '#E0892F' : undefined} />
               <Stat label="Avg. time on task" value={formatDuration(a.avgDuration)} hint={`${a.totalBacktracks} backtrack${a.totalBacktracks === 1 ? '' : 's'} total`} />
             </div>
+
+            {/* Is versioning worth it? — pillar 1, leads the report */}
+            <Card
+              title="Is versioning worth it?"
+              caption="The most basic question, AI aside: would people use audience versions, how often, and is the effort worth the payoff? If this is a no, the AI question below matters far less."
+            >
+              <VersioningBody followups={followups} />
+            </Card>
 
             {/* Sentiment: the hero signal */}
             <Card

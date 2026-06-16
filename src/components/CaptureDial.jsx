@@ -7,6 +7,9 @@ import {
   DIAL_POSITIONS,
   DRIVERS,
   FOLLOWUP_QUESTIONS,
+  WOULD_USE,
+  FREQUENCY,
+  EFFORT_WORTH,
   addDialResponse,
   saveFollowup,
   getFollowup,
@@ -71,7 +74,10 @@ const textareaStyle = {
 };
 
 const emptyMoment = () => ({ desired: null, current: null, why: '' });
-const emptyFollow = () => ({ drivers: [], gate: '', trustUnlock: '', worstCase: '', timeSaved: '' });
+const emptyFollow = () => ({
+  drivers: [], gate: '', trustUnlock: '', worstCase: '', timeSaved: '',
+  wouldUse: null, frequency: null, effortWorth: null, versioningWhy: '',
+});
 
 function loadFollow(name) {
   const existing = name ? getFollowup(name) : null;
@@ -79,7 +85,11 @@ function loadFollow(name) {
 }
 
 function hasFollowContent(f) {
-  return f.drivers.length > 0 || FOLLOWUP_QUESTIONS.some((q) => (f[q.key] || '').trim());
+  return (
+    f.drivers.length > 0 ||
+    f.wouldUse || f.frequency || f.effortWorth || (f.versioningWhy || '').trim() ||
+    FOLLOWUP_QUESTIONS.some((q) => (f[q.key] || '').trim())
+  );
 }
 
 export default function CaptureDial({ onDone }) {
@@ -159,6 +169,35 @@ export default function CaptureDial({ onDone }) {
             ? <>Capturing for <strong style={{ color: '#7A4DD0' }}>{participant}</strong>. Answers link to their session.</>
             : 'Name them first so answers tie to what they do in the prototype.'}
         </div>
+      </div>
+
+      {/* Pillar 1 — is versioning worth it? (asked first, AI aside) */}
+      <div style={{ background: '#FFFFFF', border: `1px solid ${theme.color.border}`, borderRadius: theme.radius.lg, padding: '16px', marginBottom: 18 }}>
+        <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 3 }}>Is versioning worth it?</div>
+        <div style={{ fontSize: 12.5, color: theme.color.textMuted, marginBottom: 14, lineHeight: 1.45 }}>The basics first, setting AI aside.</div>
+        <div style={{ marginBottom: 12 }}>
+          <FieldLabel>Would they use audience versions at all?</FieldLabel>
+          <SegButton options={WOULD_USE} value={follow.wouldUse} onChange={(v) => setFollowField('wouldUse', v)} />
+        </div>
+        <div style={{ marginBottom: 12 }}>
+          <FieldLabel>How often would they use it?</FieldLabel>
+          <SegButton options={FREQUENCY} value={follow.frequency} onChange={(v) => setFollowField('frequency', v)} />
+        </div>
+        <div style={{ marginBottom: 12 }}>
+          <FieldLabel>Is the effort to create + manage worth it?</FieldLabel>
+          <SegButton options={EFFORT_WORTH} value={follow.effortWorth} onChange={(v) => setFollowField('effortWorth', v)} />
+        </div>
+        <FieldLabel>Notes</FieldLabel>
+        <div style={{ fontSize: 12.5, color: '#7A4DD0', marginBottom: 7, lineHeight: 1.45 }}>
+          Also ask: would they want versions even without AI? · What do they picture as “amenities”?
+        </div>
+        <textarea
+          value={follow.versioningWhy}
+          onChange={(e) => setFollowField('versioningWhy', e.target.value)}
+          placeholder="Quote what they said…"
+          rows={2}
+          style={textareaStyle}
+        />
       </div>
 
       {/* Dial per moment */}

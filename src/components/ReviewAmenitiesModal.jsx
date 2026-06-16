@@ -44,7 +44,7 @@ function AmenityCard({ amenity }) {
                 <div style={{ width: `${amenity.brandMatch}%`, height: '100%', background: c, borderRadius: 3 }} />
               </div>
               <span style={{ fontSize: 11, fontWeight: 600, color: c, whiteSpace: 'nowrap' }}>
-                {amenity.brandMatch}% brand match
+                {amenity.brandMatch}% audience match
               </span>
             </div>
           );

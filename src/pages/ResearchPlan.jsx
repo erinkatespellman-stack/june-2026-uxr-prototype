@@ -60,7 +60,7 @@ export default function ResearchPlan() {
             </div>
             <h1 style={{ fontSize: 34, fontWeight: 600, margin: 0, letterSpacing: -0.5 }}>Research Plan</h1>
             <div style={{ fontSize: 15, color: theme.color.textMuted, marginTop: 6 }}>
-              How our team feels about AI helping create amenities and email versions · 50-minute interviews
+              Whether audience versioning is worth it, and how much AI should help create it · 30-minute interviews
             </div>
           </div>
           <div className="no-print" style={{ display: 'flex', gap: 8 }}>
@@ -74,14 +74,14 @@ export default function ResearchPlan() {
         <div style={{ background: '#F3EFFC', border: '1px solid #E2D5F6', borderRadius: theme.radius.lg, padding: '18px 20px', marginBottom: 30 }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: '#7A4DD0', letterSpacing: 0.4, textTransform: 'uppercase', marginBottom: 6 }}>In plain terms</div>
           <div style={{ fontSize: 16.5, color: theme.color.text, lineHeight: 1.6 }}>
-            We're sitting down with the people who create these guest emails, watching them use the new AI features, and asking one core question: <strong>how much do they want AI to do, and where do they want to stay in control?</strong> Their answers tell us where to spend next year's time and budget.
+            We're sitting down with the people who create these guest emails to answer two questions. First, the basic one: <strong>is creating audience versions even worth it, would they use it, and is the effort worth the payoff?</strong> Then, if it is: <strong>how much should AI do the work, and where do they want to stay in control?</strong> Their answers tell us where to spend next year's time and budget.
           </div>
         </div>
 
         {/* 1. Why */}
         <Card
           title="1 · Why we're doing this"
-          caption="We want to know how much of this work people actually want AI to handle. Whatever we hear points to one of three directions, and we look at amenities and email versions separately, since people may feel differently about each."
+          caption="Two things drive the roadmap. First: is versioning worth building at all? If the team won't use it, or the effort outweighs the payoff, that's the answer. If it is worth it, then the second question (how much should AI handle) points to one of three directions below (judged separately for amenities and email versions)."
         >
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
             {[
@@ -97,17 +97,24 @@ export default function ResearchPlan() {
             ))}
           </div>
           <div style={{ marginTop: 16, fontSize: 15, color: theme.color.textMuted, lineHeight: 1.55 }}>
-            The goal isn't "did people like it?" It's a clear answer to <strong style={{ color: theme.color.text }}>how much AI should do</strong>, for amenities and for email versions.
+            The goal isn't "did people like it?" It's a clear answer to <strong style={{ color: theme.color.text }}>whether versioning is worth it</strong>, and if so, <strong style={{ color: theme.color.text }}>how much AI should do</strong>, for amenities and for email versions.
           </div>
         </Card>
 
         {/* 2. What we want to learn */}
         <Card title="2 · What we want to learn">
+          <div style={{ fontSize: 13, fontWeight: 700, color: '#7A4DD0', letterSpacing: 0.4, textTransform: 'uppercase', marginBottom: 8 }}>First: is versioning worth it?</div>
+          <ol style={{ margin: '0 0 18px', paddingLeft: 20, fontSize: 15.5, color: theme.color.text, lineHeight: 1.7 }}>
+            <li><strong>Would they create audience versions at all?</strong> Even setting AI aside, is a tailored version per segment something they'd want?</li>
+            <li><strong>How often would they really use it?</strong> Every campaign, now and then, or rarely?</li>
+            <li><strong>Is the effort worth it?</strong> Does creating <em>and managing</em> versions feel worth the payoff?</li>
+            <li>And a gut-check on language: <strong>what do they even picture when we say "amenities"?</strong></li>
+          </ol>
+          <div style={{ fontSize: 13, fontWeight: 700, color: '#7A4DD0', letterSpacing: 0.4, textTransform: 'uppercase', marginBottom: 8 }}>Then: how much AI?</div>
           <ol style={{ margin: 0, paddingLeft: 20, fontSize: 15.5, color: theme.color.text, lineHeight: 1.7 }}>
-            <li>For amenities and for email versions <em>(we ask about each on its own, since people often feel differently)</em>: do they want AI to do <strong>less, more, or about the same?</strong></li>
-            <li><strong>Why they feel that way</strong>: is it about trust, protecting the brand, saving time, who's accountable, or wanting a personal touch?</li>
+            <li>For amenities and for email versions <em>(asked separately, since people often feel differently)</em>: do they want AI to do <strong>less, more, or about the same?</strong></li>
+            <li><strong>Why they feel that way</strong>: trust, protecting the brand, saving time, who's accountable, or wanting a personal touch?</li>
             <li><strong>Where's their line</strong>: which step do they want to check by hand, and where are they happy to let AI run?</li>
-            <li>What would make AI feel <em>"just right"</em> instead of <em>"too much,"</em> and what goes wrong if we get it wrong?</li>
           </ol>
         </Card>
 
@@ -143,7 +150,7 @@ export default function ResearchPlan() {
         </Card>
 
         {/* 4. Session */}
-        <Card title="4 · How each 50-minute session runs" caption="About half the time, they actually use the prototype while talking us through their thinking. That's where we learn the most.">
+        <Card title="4 · How each 30-minute session runs" caption="A big chunk is hands-on in the prototype while they talk us through their thinking. That's where we learn the most.">
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr>
@@ -154,12 +161,12 @@ export default function ResearchPlan() {
             </thead>
             <tbody>
               {[
-                ['0–5 min', 'Warm-up', "How they work today and what's frustrating, before AI even comes up"],
-                ['5–10 min', 'How they do it now', '"Walk me through making or approving one of these today." We note how much effort and control they have'],
-                ['10–30 min', 'They try the prototype', 'Two tasks: create targeted amenities, then create the RC Club email version. They talk out loud while we mostly listen'],
-                ['30–42 min', 'The control questions', 'The "dial" exercise and how each step felt (see section 5)'],
-                ['42–48 min', "What they'd improve", '"If we could fix one thing, do more for you or give you more control, which, and why?"'],
-                ['48–50 min', 'Wrap up', "Anything we didn't ask about?"],
+                ['0–3 min', 'Warm-up', "How they work today and what's frustrating, before AI even comes up"],
+                ['3–7 min', 'How they do it now', '"Walk me through making or approving one of these today." We note effort, control, and whether versions feel worth it'],
+                ['7–18 min', 'They try the prototype', 'Two tasks: create targeted amenities, then create the RC Club email version. They talk out loud while we mostly listen'],
+                ['18–25 min', 'The key questions', 'Is versioning worth it (use / frequency / effort), then the AI "dial" exercise (see section 5)'],
+                ['25–29 min', "What they'd improve", '"If we could fix one thing, do more for you or give you more control, which, and why?"'],
+                ['29–30 min', 'Wrap up', "Anything we didn't ask about?"],
               ].map((r) => (
                 <tr key={r[0]}>
                   <td style={{ ...td, fontWeight: 600, whiteSpace: 'nowrap' }}>{r[0]}</td>
@@ -229,7 +236,7 @@ export default function ResearchPlan() {
         {/* 8. Practical */}
         <Card title="8 · The practical bits">
           <div style={{ fontSize: 15, color: theme.color.text, lineHeight: 1.7 }}>
-            Get permission to record · book 60-minute slots (50 to talk, plus a buffer) · offer a thank-you incentive · run the very first session as a practice round and adjust · and the quick feedback question at the end flows straight into the{' '}
+            Get permission to record · book 40-minute slots (30 to talk, plus a buffer) · offer a thank-you incentive · run the very first session as a practice round and adjust · and the quick feedback question at the end flows straight into the{' '}
             <button onClick={() => navigate('/report')} style={{ background: 'none', border: 'none', padding: 0, color: theme.color.link, fontWeight: 600, cursor: 'pointer', fontSize: 15, fontFamily: 'inherit' }}>live results report</button>{' '}
             so you can see it next to what people actually did.
           </div>

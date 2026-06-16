@@ -49,6 +49,11 @@ export function publishVersion(key) {
   updateVersion(key, { exists: true, status: 'Published', lastEdited: 'Apr 18, 2026' });
 }
 
+// Delete a version: drop it from the grid (exists=false).
+export function deleteVersion(key) {
+  updateVersion(key, { exists: false });
+}
+
 function subscribe(l) {
   listeners.add(l);
   return () => listeners.delete(l);

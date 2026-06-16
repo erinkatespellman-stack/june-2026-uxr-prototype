@@ -9,31 +9,6 @@ import theme from '../theme';
 import { trackPageVisit, trackClick, trackSurveyResponse, getMode } from '../tracking/sessionTracker';
 import { getFeaturesByCategory, completeDiscovery, useAmenityState, setDiscoveryAudience } from '../store/amenityStore';
 
-function PrimaryButton({ children, onClick, style }) {
-  const [hover, setHover] = useState(false);
-  return (
-    <button
-      onClick={onClick}
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
-      style={{
-        background: hover ? theme.color.primaryHover : theme.color.primary,
-        color: '#FFFFFF',
-        border: 'none',
-        borderRadius: theme.radius.md,
-        padding: '9px 18px',
-        fontSize: 13,
-        fontWeight: 600,
-        cursor: 'pointer',
-        transition: `background ${theme.motion.fast}`,
-        ...style,
-      }}
-    >
-      {children}
-    </button>
-  );
-}
-
 function ChevronDown() {
   return (
     <svg width="11" height="11" viewBox="0 0 12 12" fill="none" aria-hidden>
@@ -106,49 +81,6 @@ function FormMiniThumb() {
 
 // ──────── Discovery banner (Figma "Audience versions are now available") ────────
 
-function AudienceVersionsBanner({ onGetStarted }) {
-  return (
-    <div
-      style={{
-        background: theme.color.aiBlueBannerBg,
-        border: `1px solid ${theme.color.aiBlueBannerBorder}`,
-        borderRadius: theme.radius.lg,
-        padding: '18px 20px',
-        display: 'flex',
-        alignItems: 'center',
-        gap: 14,
-        justifyContent: 'space-between',
-        marginBottom: 20,
-      }}
-    >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-        <div
-          style={{
-            width: 40,
-            height: 40,
-            flexShrink: 0,
-            borderRadius: 10,
-            background: theme.color.aiBlueAccent,
-            color: '#FFFFFF',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <SparkleIcon white />
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-          <div style={{ fontSize: 14, fontWeight: 600, color: theme.color.text }}>Audience versions are now available</div>
-          <div style={{ fontSize: 13, color: theme.color.textMuted, lineHeight: 1.5, maxWidth: 620 }}>
-            Create tailored email versions for specific guest segments, starting with RC Club. Customize the welcome, amenities, and more for Club members.
-          </div>
-        </div>
-      </div>
-      <PrimaryButton onClick={onGetStarted} style={{ flexShrink: 0 }}>Get Started</PrimaryButton>
-    </div>
-  );
-}
-
 // ──────── Status badge ("Active") ────────
 
 function ActiveBadge() {
@@ -169,6 +101,111 @@ function ActiveBadge() {
     >
       Active
     </span>
+  );
+}
+
+// Audience badge on amenity cards — marks which version an amenity was created
+// for (e.g. "RC Club"). Base/property-wide amenities have no target and no badge.
+const AUDIENCE_BADGE = {
+  'rc-club': { label: 'RC Club', bg: '#F1EAFB', color: '#7A4DD0' },
+  beach: { label: 'Beach', bg: '#FBF0E4', color: '#C0772A' },
+};
+
+function AudienceBadge({ target }) {
+  const b = AUDIENCE_BADGE[target];
+  if (!b) return null;
+  return (
+    <span
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        fontSize: 11,
+        fontWeight: 600,
+        color: b.color,
+        background: b.bg,
+        padding: '3px 9px',
+        borderRadius: theme.radius.pill,
+        letterSpacing: 0.2,
+      }}
+    >
+      {b.label}
+    </span>
+  );
+}
+
+// Audience filter on the Library — narrows amenities to those created for a given
+// audience version. "All audiences" shows everything (incl. base/property-wide).
+const AUDIENCE_FILTERS = [
+  { label: 'All audiences', target: null },
+  { label: 'RC Club', target: 'rc-club' },
+  { label: 'Beach', target: 'beach' },
+];
+
+function AudienceFilter({ value, onChange }) {
+  const [open, setOpen] = useState(false);
+  const current = AUDIENCE_FILTERS.find((a) => a.target === value) || AUDIENCE_FILTERS[0];
+  return (
+    <div style={{ position: 'relative' }}>
+      <button
+        onClick={() => setOpen((v) => !v)}
+        onBlur={() => setTimeout(() => setOpen(false), 150)}
+        style={{
+          height: 32,
+          padding: '0 12px',
+          borderRadius: theme.radius.pill,
+          background: value ? theme.color.pillActiveBg : '#FFFFFF',
+          border: `1px solid ${value ? theme.color.pillActiveBorder : theme.color.pillBorder}`,
+          color: theme.color.text,
+          fontSize: 13,
+          fontWeight: 500,
+          cursor: 'pointer',
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 7,
+        }}
+      >
+        <span style={{ color: theme.color.textMuted, fontSize: 12 }}>Audience:</span>
+        {current.label}
+        <ChevronDown />
+      </button>
+      {open && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 38,
+            left: 0,
+            minWidth: 170,
+            background: '#FFFFFF',
+            border: `1px solid ${theme.color.border}`,
+            borderRadius: theme.radius.md,
+            boxShadow: theme.shadow.overlay,
+            padding: '4px 0',
+            zIndex: 6,
+          }}
+        >
+          {AUDIENCE_FILTERS.map((a) => (
+            <button
+              key={a.label}
+              onMouseDown={() => { onChange(a.target); setOpen(false); }}
+              style={{
+                display: 'block',
+                width: '100%',
+                textAlign: 'left',
+                background: a.target === value ? '#F3EFFC' : 'transparent',
+                border: 'none',
+                padding: '8px 14px',
+                fontSize: 13,
+                color: theme.color.text,
+                cursor: 'pointer',
+                fontWeight: a.target === value ? 600 : 500,
+              }}
+            >
+              {a.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -249,7 +286,10 @@ function FeatureCard({ feature, isNew }) {
       </div>
       <div style={{ padding: '14px 16px 16px', display: 'flex', flexDirection: 'column', gap: 9, flex: 1 }}>
         <div style={{ fontSize: 16, fontWeight: 600, color: theme.color.text, lineHeight: 1.3 }}>{feature.name}</div>
-        <ActiveBadge />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+          <ActiveBadge />
+          <AudienceBadge target={feature.target} />
+        </div>
 
         {feature.draftDate && (
           <div style={{ fontSize: 12, color: theme.color.textMuted }}>Draft edits saved on {feature.draftDate}</div>
@@ -258,7 +298,7 @@ function FeatureCard({ feature, isNew }) {
         {feature.brandMatch != null && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 5, marginTop: 2 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: theme.color.textMuted }}>
-              <span>Brand match</span>
+              <span>Audience match</span>
               <span style={{ color: feature.brandMatch >= 85 ? theme.color.success : '#E0892F', fontWeight: 600 }}>{feature.brandMatch}%</span>
             </div>
             <div style={{ height: 5, borderRadius: 3, background: '#ECECEC', overflow: 'hidden' }}>
@@ -369,23 +409,18 @@ export default function Library() {
   const [query, setQuery] = useState('');
   const [modal, setModal] = useState(null); // null | 'audience' | 'guide' | 'review' — amenity creation
   const [createOpen, setCreateOpen] = useState(false); // "Create New" dropdown sheet
+  const [audience, setAudience] = useState(null); // audience-type amenity filter (null = all)
   const [showSurvey, setShowSurvey] = useState(false);
 
   useAmenityState(); // subscribe so the Library re-renders when amenities are added
-  const propertyFeatures = getFeaturesByCategory('Property Features');
-  const dining = getFeaturesByCategory('Dining');
-  const experiences = getFeaturesByCategory('Experiences');
+  const byAudience = (list) => (audience ? list.filter((f) => f.target === audience) : list);
+  const propertyFeatures = byAudience(getFeaturesByCategory('Property Features'));
+  const dining = byAudience(getFeaturesByCategory('Dining'));
+  const experiences = byAudience(getFeaturesByCategory('Experiences'));
 
   useEffect(() => {
     trackPageVisit('library');
   }, []);
-
-  // Banner "Get Started" → create a new pre-arrival email audience version
-  // (loyalty & passions library).
-  const startAudienceVersion = () => {
-    trackClick('get_started_audience_versions', { source: 'discovery_banner' });
-    navigate('/versions/audience');
-  };
 
   // "Create New" sheet → "Create New Amenity" launches the AI amenity flow.
   // Audience Library (who) → Guide AI (how) → Review (what).
@@ -549,11 +584,12 @@ export default function Library() {
             <FilterPill label="Active (12)" active={filter === 'active'} onClick={() => setFilter('active')} />
             <FilterPill label="Inactive (23)" active={filter === 'inactive'} onClick={() => setFilter('inactive')} />
             <FilterPill label="Expired (2)" active={filter === 'expired'} onClick={() => setFilter('expired')} />
+            <div style={{ width: 1, height: 22, background: theme.color.borderStrong }} />
+            <AudienceFilter value={audience} onChange={setAudience} />
           </div>
 
           {/* Pre-Arrival Communications */}
           <AccordionSection title="Pre-Arrival Communications" defaultOpen>
-            <AudienceVersionsBanner onGetStarted={startAudienceVersion} />
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20, maxWidth: 900 }}>
               <ChannelCard title="Email" thumbnail={<EmailMiniThumb />} draftDate="April 16, 2026" publishedDate="April 16, 2026" ctaLabel="Manage Versions" onOpen={openEmail} onManage={openEmail} />
               <ChannelCard title="Travel Planner Form" thumbnail={<FormMiniThumb />} draftDate="March 30, 2026" publishedDate="March 30, 2026" ctaLabel="Manage" onOpen={() => trackClick('open_travel_planner_card')} onManage={() => trackClick('manage_travel_planner')} />

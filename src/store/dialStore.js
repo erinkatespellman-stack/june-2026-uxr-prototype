@@ -30,6 +30,30 @@ export const DRIVERS = [
   { key: 'personal', label: 'Personal touch' },
 ];
 
+// Pillar 1 — "is versioning worth it?" Asked once per participant, AI aside.
+export const WOULD_USE = [
+  { key: 'yes', label: 'Yes' },
+  { key: 'maybe', label: 'Maybe' },
+  { key: 'no', label: 'No' },
+];
+
+export const FREQUENCY = [
+  { key: 'every-campaign', label: 'Every campaign' },
+  { key: 'monthly', label: 'Monthly' },
+  { key: 'few-times', label: 'A few times a year' },
+  { key: 'rarely', label: 'Rarely' },
+];
+
+export const EFFORT_WORTH = [
+  { key: 'worth', label: 'Worth it' },
+  { key: 'depends', label: 'Depends' },
+  { key: 'not-worth', label: 'Not worth it' },
+];
+
+export function optionLabel(list, key) {
+  return (list.find((o) => o.key === key) || {}).label || key;
+}
+
 // The §5 follow-ups, asked once per participant. Free text.
 export const FOLLOWUP_QUESTIONS = [
   { key: 'gate', label: 'Which step would they stop and double-check the AI?', placeholder: 'Where they want a human sign-off…' },
@@ -110,7 +134,14 @@ export function getFollowup(participant) {
 // Upsert a participant's follow-up answers (drivers + the §5 free-text fields).
 export function saveFollowup(participant, data) {
   if (!participant) return null;
-  const record = { participant, drivers: [], gate: '', trustUnlock: '', worstCase: '', timeSaved: '', ...data, at: Date.now() };
+  const record = {
+    participant,
+    drivers: [],
+    gate: '', trustUnlock: '', worstCase: '', timeSaved: '',
+    wouldUse: null, frequency: null, effortWorth: null, versioningWhy: '',
+    ...data,
+    at: Date.now(),
+  };
   followCache = [...followCache.filter((f) => f.participant !== participant), record];
   saveFollowupList(followCache);
   notify();

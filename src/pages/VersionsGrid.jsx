@@ -4,7 +4,7 @@ import Shell from '../components/Shell';
 import VersionCard from '../components/VersionCard';
 import theme from '../theme';
 import { trackPageVisit, trackClick } from '../tracking/sessionTracker';
-import { useVersions } from '../store/versionsStore';
+import { useVersions, deleteVersion } from '../store/versionsStore';
 
 function SearchIcon() {
   return (
@@ -28,6 +28,48 @@ function PlusIcon() {
     <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden>
       <path d="M6 1.5v9M1.5 6h9" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
     </svg>
+  );
+}
+
+function SparkleIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 14 14" fill="none" aria-hidden style={{ flexShrink: 0 }}>
+      <path d="M7 1.2 8.1 4.4 11.3 5.5 8.1 6.6 7 9.8 5.9 6.6 2.7 5.5 5.9 4.4 7 1.2Z" fill="#FFFFFF" />
+      <path d="m11 9 .5 1.3 1.3.5-1.3.5-.5 1.3-.5-1.3-1.3-.5 1.3-.5L11 9Z" fill="#FFFFFF" opacity="0.6" />
+    </svg>
+  );
+}
+
+// Blue discovery banner — moved here from the main Library (it's about email
+// versions, not amenities). "Get Started" kicks off the new-version flow.
+function AudienceVersionsBanner({ onGetStarted }) {
+  return (
+    <div
+      style={{
+        background: theme.color.aiBlueBannerBg,
+        border: `1px solid ${theme.color.aiBlueBannerBorder}`,
+        borderRadius: theme.radius.lg,
+        padding: '18px 20px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 14,
+        justifyContent: 'space-between',
+        marginBottom: 22,
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+        <div style={{ width: 40, height: 40, flexShrink: 0, borderRadius: 10, background: theme.color.aiBlueAccent, color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <SparkleIcon />
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <div style={{ fontSize: 14, fontWeight: 600, color: theme.color.text }}>Audience versions are now available</div>
+          <div style={{ fontSize: 13, color: theme.color.textMuted, lineHeight: 1.5, maxWidth: 620 }}>
+            Create tailored email versions for specific guest segments, starting with RC Club. Customize the welcome, amenities, and more for Club members.
+          </div>
+        </div>
+      </div>
+      <PrimaryButton onClick={onGetStarted}>Get Started</PrimaryButton>
+    </div>
   );
 }
 
@@ -186,6 +228,8 @@ export default function VersionsGrid() {
             </p>
           </div>
 
+          <AudienceVersionsBanner onGetStarted={createNew} />
+
           {/* Toolbar */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 22, flexWrap: 'wrap' }}>
             <div style={{ position: 'relative', flex: '0 1 320px', display: 'flex', alignItems: 'center' }}>
@@ -219,15 +263,16 @@ export default function VersionsGrid() {
               <VersionCard
                 key={v.key}
                 name={v.name}
-                persona={v.persona}
                 status={v.status}
                 scheduledAt={v.scheduledAt}
                 lastEdited={v.lastEdited}
                 variant={v.variant}
-                onOpen={() => trackClick('open_version', { version: v.key })}
-                onEdit={() => trackClick('edit_version', { version: v.key })}
-                onDuplicate={() => trackClick('duplicate_version', { version: v.key })}
-                onDelete={() => trackClick('delete_version', { version: v.key })}
+                onOpen={() => { trackClick('open_version', { version: v.key }); navigate('/versions/rc-club'); }}
+                onEdit={() => { trackClick('edit_version', { version: v.key }); navigate('/versions/rc-club'); }}
+                onDelete={() => {
+                  trackClick('delete_version', { version: v.key });
+                  if (window.confirm(`Delete the "${v.name}" version?`)) deleteVersion(v.key);
+                }}
               />
             ))}
           </div>
