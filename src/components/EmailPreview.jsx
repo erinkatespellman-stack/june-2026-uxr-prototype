@@ -19,14 +19,25 @@ function SparkIcon() {
   );
 }
 
-function Section({ id, status, label, onEdit, children }) {
-  // Idle states (pending OR accepted) render in blue; only 'editing' flips to green.
+function Section({ id, status, label, edited, onEdit, children }) {
   const isEditing = status === 'editing';
   const interactive = status === 'pending' || status === 'editing' || status === 'accepted';
 
-  // AI-suggested sections use RC Club purple; only the active edit state flips to green.
-  const borderColor = isEditing ? theme.color.success : '#7A4DD0';
-  const surfaceTint = isEditing ? theme.color.successBg : '#F3EFFC';
+  // Colour states:
+  //  - editing → green (active edit)
+  //  - edited (user overrode the AI copy) → blue, badge reads "Edited"
+  //  - otherwise (untouched AI suggestion) → RC Club purple
+  const BLUE = theme.color.primary;
+  const BLUE_TINT = '#EAF2FD';
+  let borderColor = '#7A4DD0';
+  let surfaceTint = '#F3EFFC';
+  if (isEditing) {
+    borderColor = theme.color.success;
+    surfaceTint = theme.color.successBg;
+  } else if (edited) {
+    borderColor = BLUE;
+    surfaceTint = BLUE_TINT;
+  }
   const badgeBg = borderColor;
   const iconColor = borderColor;
 
@@ -74,7 +85,7 @@ function Section({ id, status, label, onEdit, children }) {
             }}
           >
             <SparkIcon />
-            {isEditing ? 'Editing' : label || 'Recommended'}
+            {isEditing ? 'Editing' : edited ? 'Edited' : label || 'Recommended'}
           </div>
 
           <button
@@ -132,6 +143,7 @@ export default function EmailPreview({
   const resolve = (key) => ({
     status: sectionStatus?.[key]?.status || 'static',
     content: sectionStatus?.[key]?.content || baseContent[key],
+    edited: !!sectionStatus?.[key]?.edited,
   });
 
   const hero = resolve('hero');
@@ -226,6 +238,7 @@ export default function EmailPreview({
       <Section
         id="hero"
         status={hero.status}
+        edited={hero.edited}
         label="AI suggested"
         onAccept={onAccept}
         onEdit={onEdit}
@@ -267,6 +280,7 @@ export default function EmailPreview({
       <Section
         id="body"
         status={body.status}
+        edited={body.edited}
         label="AI suggested"
         onAccept={onAccept}
         onEdit={onEdit}
@@ -313,6 +327,7 @@ export default function EmailPreview({
       <Section
         id="amenities"
         status={amenities.status}
+        edited={amenities.edited}
         label="AI suggested"
         onAccept={onAccept}
         onEdit={onEdit}

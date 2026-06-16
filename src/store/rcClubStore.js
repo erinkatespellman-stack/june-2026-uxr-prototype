@@ -54,7 +54,8 @@ export function toggleAcceptSection(key) {
 }
 
 export function rejectSection(key) {
-  setSection(key, { status: 'rejected', content: DEFAULT_CONTENT[key] });
+  // Reverting to the default copy is no longer an override.
+  setSection(key, { status: 'rejected', content: DEFAULT_CONTENT[key], edited: false });
   if (state.editingKey === key) state = { ...state, editingKey: null };
   notify();
 }
@@ -86,7 +87,9 @@ export function cancelEditing() {
 }
 
 export function setSectionContent(key, content) {
-  setSection(key, { content });
+  // Content changed by the user → mark the section as overridden (drives the
+  // blue "Edited" treatment in EmailPreview, vs purple "AI suggested").
+  setSection(key, { content, edited: true });
   notify();
 }
 
