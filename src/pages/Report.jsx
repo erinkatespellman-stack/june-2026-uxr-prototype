@@ -476,6 +476,7 @@ export default function Report() {
   const dial = useDialResponses();
   const followups = useFollowups();
   const [sessions, setSessions] = useState(() => getAllSessions());
+  const [showSessions, setShowSessions] = useState(false);
 
   useEffect(() => {
     const refresh = () => {
@@ -622,24 +623,40 @@ export default function Report() {
               )}
             </Card>
 
-            {/* Per-session deep dive */}
-            <Card
-              title="Sessions"
-              caption="Each participant's run. Expand a row to replay their exact path, useful when a number above raises a question."
-            >
-              <div style={{ display: 'grid', gridTemplateColumns: '18px 150px 1fr 90px 90px', gap: 12, padding: '0 14px 8px', fontSize: 13, fontWeight: 600, color: theme.color.textSubtle, textTransform: 'uppercase', letterSpacing: 0.4 }}>
-                <span />
-                <span>Session</span>
-                <span>Sentiment</span>
-                <span>Time</span>
-                <span>Status</span>
+            {/* Behaviour tracking: collapsed by default. In a moderated study
+                this is mostly the researcher's own test runs, so the report leads
+                with the captured dial answers above. */}
+            <section className="report-card" style={{ marginBottom: 32 }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+                <div>
+                  <h2 style={{ fontSize: 20, fontWeight: 600, margin: '0 0 4px', letterSpacing: -0.2 }}>
+                    Behaviour tracking <span style={{ color: theme.color.textMuted, fontWeight: 400 }}>({sessions.length})</span>
+                  </h2>
+                  <p style={{ fontSize: 15, color: theme.color.textMuted, margin: 0, lineHeight: 1.5, maxWidth: 640 }}>
+                    Automatic click-by-click tracking from this browser. In a moderated study it's mostly your own test runs; your captured answers live in “The control dial” above.
+                  </p>
+                </div>
+                <button onClick={() => setShowSessions((v) => !v)} style={{ ...ghostBtnStyle, whiteSpace: 'nowrap', flexShrink: 0 }}>
+                  {showSessions ? 'Hide details' : 'Show details'}
+                </button>
               </div>
-              <div style={{ borderTop: `1px solid ${theme.color.border}` }}>
-                {[...sessions].reverse().map((s) => (
-                  <SessionRow key={s.sessionId} session={s} dial={dial} followups={followups} />
-                ))}
-              </div>
-            </Card>
+              {showSessions && (
+                <div style={{ background: '#FFFFFF', border: `1px solid ${theme.color.border}`, borderRadius: theme.radius.lg, padding: '20px 22px', marginTop: 14 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '18px 150px 1fr 90px 90px', gap: 12, padding: '0 14px 8px', fontSize: 13, fontWeight: 600, color: theme.color.textSubtle, textTransform: 'uppercase', letterSpacing: 0.4 }}>
+                    <span />
+                    <span>Session</span>
+                    <span>Sentiment</span>
+                    <span>Time</span>
+                    <span>Status</span>
+                  </div>
+                  <div style={{ borderTop: `1px solid ${theme.color.border}` }}>
+                    {[...sessions].reverse().map((s) => (
+                      <SessionRow key={s.sessionId} session={s} dial={dial} followups={followups} />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </section>
           </>
         )}
 
