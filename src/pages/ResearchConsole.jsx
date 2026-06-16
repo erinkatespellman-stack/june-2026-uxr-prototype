@@ -3,12 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import theme from '../theme';
 import Shell from '../components/Shell';
 import CaptureDial from '../components/CaptureDial';
-import { getMode, setMode } from '../tracking/sessionTracker';
+import { getMode, setMode, resetSession } from '../tracking/sessionTracker';
 
-// Full-page capture/setup screen. Set the study mode at the start of the session,
-// then record dial answers. The same capture form is also available everywhere as
-// a slide-in drawer (header "Capture" button), so this page is mainly for setup
-// and reviewing. Feeds the Study Summary report.
+// Full-page capture screen, opened from the pencil icon in the header. Set the
+// study mode, name the participant, and record dial answers as they talk. This is
+// the single capture surface and feeds the Study Summary report.
 
 function ghostBtn() {
   return {
@@ -27,8 +26,17 @@ function ghostBtn() {
 export default function ResearchConsole() {
   const navigate = useNavigate();
   const [mode, setModeState] = useState(() => getMode());
+  const [resetKey, setResetKey] = useState(0);
 
   const chooseMode = (m) => { setModeState(m); setMode(m); };
+
+  // Start a fresh session for the next participant (clears the capture form).
+  const newSession = () => {
+    if (window.confirm('Start a fresh session for a new participant? Saved results are kept.')) {
+      resetSession();
+      setResetKey((k) => k + 1);
+    }
+  };
 
   return (
     <Shell breadcrumbs={['Research', 'Capture Console']}>
@@ -45,7 +53,10 @@ export default function ResearchConsole() {
                 Keep this page open during the interview. Name the participant, then record their control-dial answers as they talk. Everything you save flows straight into the results.
               </div>
             </div>
-            <button onClick={() => navigate('/report')} style={ghostBtn()}>View results →</button>
+            <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+              <button onClick={newSession} style={{ ...ghostBtn(), whiteSpace: 'nowrap' }}>New session</button>
+              <button onClick={() => navigate('/report')} style={{ ...ghostBtn(), whiteSpace: 'nowrap' }}>View results</button>
+            </div>
           </div>
 
           <div style={{ height: 1, background: theme.color.border, margin: '24px 0 28px' }} />
@@ -78,7 +89,7 @@ export default function ResearchConsole() {
 
           {/* Capture form */}
           <div style={{ background: '#FFFFFF', border: `1px solid ${theme.color.border}`, borderRadius: theme.radius.lg, padding: '22px 24px' }}>
-            <CaptureDial />
+            <CaptureDial key={resetKey} />
           </div>
         </div>
       </main>

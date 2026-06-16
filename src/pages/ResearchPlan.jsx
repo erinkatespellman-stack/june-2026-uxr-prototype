@@ -64,7 +64,6 @@ export default function ResearchPlan() {
             </div>
           </div>
           <div className="no-print" style={{ display: 'flex', gap: 8 }}>
-            <button onClick={() => navigate('/report')} style={ghostBtn()}>View live results →</button>
             <button onClick={() => window.print()} style={ghostBtn()}>Print</button>
           </div>
         </div>

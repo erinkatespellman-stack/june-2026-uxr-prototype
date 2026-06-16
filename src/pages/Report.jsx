@@ -524,12 +524,6 @@ export default function Report() {
               onPrint={() => window.print()}
             />
             <button
-              onClick={() => { if (window.confirm('Start a fresh session? Stored history is kept.')) { resetSession(); setSessions(getAllSessions()); } }}
-              style={ghostBtnStyle}
-            >
-              New session
-            </button>
-            <button
               onClick={() => { if (window.confirm('Clear ALL stored sessions and feedback? This cannot be undone.')) { clearAllSessions(); resetSession(); setSessions(getAllSessions()); } }}
               style={{ ...ghostBtnStyle, color: theme.color.danger }}
             >
