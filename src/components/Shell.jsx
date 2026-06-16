@@ -44,6 +44,16 @@ function NotificationIcon() {
   );
 }
 
+// Researcher capture-console entry (opens /research/console)
+function CapturePencilIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
+      <path d="M10.4 2.6 13.4 5.6 6 13H3v-3l7.4-7.4Z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
+      <path d="M9.1 3.9 12.1 6.9" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 // Researcher session-report entry (discreet — opens /report)
 function ReportIcon() {
   return (
@@ -233,6 +243,9 @@ export default function Shell({
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <ShellIconButton label="Research plan" onClick={() => navigate('/research')}>
             <BookIcon />
+          </ShellIconButton>
+          <ShellIconButton label="Capture console" onClick={() => navigate('/research/console')}>
+            <CapturePencilIcon />
           </ShellIconButton>
           <ShellIconButton label="Session report" onClick={() => navigate('/report')}>
             <ReportIcon />

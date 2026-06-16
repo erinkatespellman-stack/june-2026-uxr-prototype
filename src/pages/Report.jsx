@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import theme from '../theme';
 import Shell from '../components/Shell';
 import { getSessionData, resetSession, getAllSessions, clearAllSessions } from '../tracking/sessionTracker';
@@ -472,7 +471,6 @@ function ShareMenu({ onCsv, onJson, onPrint }) {
 }
 
 export default function Report() {
-  const navigate = useNavigate();
   const dial = useDialResponses();
   const followups = useFollowups();
   const [sessions, setSessions] = useState(() => getAllSessions());
@@ -520,12 +518,6 @@ export default function Report() {
             </div>
           </div>
           <div className="no-print" style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-            <button
-              onClick={() => navigate('/research/console')}
-              style={{ ...ghostBtnStyle, borderColor: '#CDB8F0', color: '#7A4DD0', fontWeight: 600 }}
-            >
-              Capture console →
-            </button>
             <ShareMenu
               onCsv={() => downloadFile(`uxr-feedback-${getAllSessions().length}p.csv`, feedbackCSV(getAllSessions()), 'text/csv;charset=utf-8')}
               onJson={() => downloadFile('uxr-study-data.json', JSON.stringify({ sessions: getAllSessions(), dial, followups }, null, 2), 'application/json')}
