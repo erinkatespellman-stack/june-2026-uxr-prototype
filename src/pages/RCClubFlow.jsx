@@ -19,6 +19,7 @@ import {
   finishEditingSection,
   cancelEditing,
   setSectionContent,
+  resetSection,
 } from '../store/rcClubStore';
 import { publishVersion } from '../store/versionsStore';
 import { DEFAULT_CONTENT, LIBRARY_IMAGES } from '../content/emailContent';
@@ -423,9 +424,34 @@ function ImageEditPanel({ currentImage, onPick, onDone, onCancel }) {
   );
 }
 
+// Revert-to-AI link shown in edit panels once a section has been overridden.
+function ResetToSuggested({ onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 6,
+        background: 'transparent',
+        border: 'none',
+        color: theme.color.primary,
+        fontSize: 12.5,
+        fontWeight: 600,
+        cursor: 'pointer',
+        fontFamily: 'inherit',
+        padding: '2px 0',
+      }}
+    >
+      <span style={{ fontSize: 13 }}>↺</span> Reset to AI suggested
+    </button>
+  );
+}
+
 // ──────── Right sidebar — Body editor (screen 9) ────────
 
-function BodyEditPanel({ value = '', onChange, onDone, onCancel }) {
+function BodyEditPanel({ value = '', onChange, onDone, onCancel, onReset, edited }) {
   const max = 1200;
   return (
     <>
@@ -433,7 +459,7 @@ function BodyEditPanel({ value = '', onChange, onDone, onCancel }) {
       <div style={{ padding: '18px 22px', flex: 1, overflowY: 'auto' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
           <label style={{ fontSize: 13, fontWeight: 600, color: theme.color.text }}>Body</label>
-          <span style={{ fontSize: 12, color: '#C4C4C4' }}>{value.length} of {max} characters</span>
+          {edited ? <ResetToSuggested onClick={onReset} /> : <span style={{ fontSize: 12, color: '#C4C4C4' }}>{value.length} of {max} characters</span>}
         </div>
         <textarea
           value={value}
@@ -464,7 +490,7 @@ function BodyEditPanel({ value = '', onChange, onDone, onCancel }) {
 
 // ──────── Right sidebar — Amenities editor ────────
 
-function AmenitiesEditPanel({ items, onChange, onDone, onCancel }) {
+function AmenitiesEditPanel({ items, onChange, onDone, onCancel, onReset, edited }) {
   const update = (i, patch) => onChange(items.map((item, idx) => (idx === i ? { ...item, ...patch } : item)));
   const move = (i, dir) => {
     const target = i + dir;
@@ -483,6 +509,11 @@ function AmenitiesEditPanel({ items, onChange, onDone, onCancel }) {
     <>
       <PanelHeader section="Amenities" helper="Reorder, edit, or remove the items shown in the amenities section." />
       <div style={{ padding: 14, flex: 1, overflowY: 'auto' }}>
+        {edited && (
+          <div style={{ marginBottom: 12 }}>
+            <ResetToSuggested onClick={onReset} />
+          </div>
+        )}
         {items.map((item, i) => (
           <div key={i} style={{ background: '#FFFFFF', border: `1px solid ${theme.color.border}`, borderRadius: theme.radius.md, padding: 12, marginBottom: 10 }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6, marginBottom: 8 }}>
@@ -739,6 +770,8 @@ export default function RCClubFlow() {
                   {editingKey === 'body' && (
                     <BodyEditPanel
                       value={rcState.sections.body.content}
+                      edited={rcState.sections.body.edited}
+                      onReset={() => { trackClick('reset_body_to_suggested'); resetSection('body'); }}
                       onChange={(v) => { trackAIInteraction('body_text_changed'); setSectionContent('body', v); }}
                       onDone={() => { trackClick('finish_editing_body'); finishEditingSection('body'); }}
                       onCancel={() => { trackClick('cancel_editing_body'); cancelEditing(); }}
@@ -747,6 +780,8 @@ export default function RCClubFlow() {
                   {editingKey === 'amenities' && (
                     <AmenitiesEditPanel
                       items={rcState.sections.amenities.content.items}
+                      edited={rcState.sections.amenities.edited}
+                      onReset={() => { trackClick('reset_amenities_to_suggested'); resetSection('amenities'); }}
                       onChange={(items) => setSectionContent('amenities', { ...rcState.sections.amenities.content, items })}
                       onDone={() => { trackClick('finish_editing_amenities'); finishEditingSection('amenities'); }}
                       onCancel={() => { trackClick('cancel_editing_amenities'); cancelEditing(); }}

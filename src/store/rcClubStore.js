@@ -3,11 +3,13 @@ import { DEFAULT_CONTENT, RC_CLUB_CONTENT } from '../content/emailContent';
 import { getAddedAmenitiesForEmail } from './amenityStore';
 
 function freshState() {
+  // `suggested` snapshots the AI copy so a section can always be reverted to it,
+  // and so `edited` can be derived by comparing the live content against it.
   return {
     sections: {
-      hero: { status: 'pending', content: RC_CLUB_CONTENT.hero },
-      body: { status: 'pending', content: RC_CLUB_CONTENT.body },
-      amenities: { status: 'pending', content: RC_CLUB_CONTENT.amenities },
+      hero: { status: 'pending', content: RC_CLUB_CONTENT.hero, suggested: RC_CLUB_CONTENT.hero },
+      body: { status: 'pending', content: RC_CLUB_CONTENT.body, suggested: RC_CLUB_CONTENT.body },
+      amenities: { status: 'pending', content: RC_CLUB_CONTENT.amenities, suggested: RC_CLUB_CONTENT.amenities },
     },
     editingKey: null,
   };
@@ -87,9 +89,19 @@ export function cancelEditing() {
 }
 
 export function setSectionContent(key, content) {
-  // Content changed by the user → mark the section as overridden (drives the
-  // blue "Edited" treatment in EmailPreview, vs purple "AI suggested").
-  setSection(key, { content, edited: true });
+  // Derive `edited` by comparing against the AI suggestion, so reverting to the
+  // suggested content (e.g. re-picking the hero TOP PICK) clears the blue
+  // "Edited" treatment automatically, and any real change sets it.
+  const suggested = state.sections[key]?.suggested;
+  const edited = JSON.stringify(content) !== JSON.stringify(suggested);
+  setSection(key, { content, edited });
+  notify();
+}
+
+// Revert a section to its AI-suggested copy (keeps the edit panel open if active).
+export function resetSection(key) {
+  const suggested = state.sections[key]?.suggested;
+  setSection(key, { content: suggested, edited: false });
   notify();
 }
 
@@ -112,6 +124,7 @@ export function generateRCClubVersion() {
         amenities: {
           status: 'pending',
           content: { title: 'Curate an Extraordinary Stay', items },
+          suggested: { title: 'Curate an Extraordinary Stay', items },
         },
       },
     };
