@@ -30,6 +30,18 @@ export const DRIVERS = [
   { key: 'personal', label: 'Personal touch' },
 ];
 
+// What kind of user the participant is (research plan §3 segments), captured
+// alongside their name so findings can be read by user type.
+export const ROLES = [
+  { key: 'creator', label: 'Creator', hint: 'Builds these emails' },
+  { key: 'approver', label: 'Approver', hint: 'Reviews / signs off' },
+  { key: 'other', label: 'Other', hint: '' },
+];
+
+export function roleLabel(key) {
+  return (ROLES.find((r) => r.key === key) || {}).label || key;
+}
+
 // Pillar 1 — "is versioning worth it?" Asked once per participant, AI aside.
 export const WOULD_USE = [
   { key: 'yes', label: 'Yes' },
@@ -136,6 +148,7 @@ export function saveFollowup(participant, data) {
   if (!participant) return null;
   const record = {
     participant,
+    role: null,
     drivers: [],
     gate: '', trustUnlock: '', worstCase: '', timeSaved: '',
     wouldUse: null, frequency: null, effortWorth: null, versioningWhy: '',

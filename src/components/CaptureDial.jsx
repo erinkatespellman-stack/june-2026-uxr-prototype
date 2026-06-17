@@ -10,6 +10,8 @@ import {
   WOULD_USE,
   FREQUENCY,
   EFFORT_WORTH,
+  ROLES,
+  roleLabel,
   addDialResponse,
   saveFollowup,
   getFollowup,
@@ -75,6 +77,7 @@ const textareaStyle = {
 
 const emptyMoment = () => ({ desired: null, current: null, why: '' });
 const emptyFollow = () => ({
+  role: null,
   drivers: [], gate: '', trustUnlock: '', worstCase: '', timeSaved: '',
   wouldUse: null, frequency: null, effortWorth: null, versioningWhy: '',
 });
@@ -110,7 +113,11 @@ export default function CaptureDial({ onDone }) {
     if (!n) return;
     setParticipant(n);
     setParticipantState(n);
-    setFollow(loadFollow(n)); // pull any follow-ups already captured for them
+    // Returning participant → load their saved answers; new one → keep the role
+    // already picked in the form. Persist so the type sticks immediately.
+    const merged = getFollowup(n) ? loadFollow(n) : { ...follow };
+    setFollow(merged);
+    if (merged.role || hasFollowContent(merged)) saveFollowup(n, merged);
     flash(`Now interviewing ${n}`);
   };
 
@@ -119,6 +126,15 @@ export default function CaptureDial({ onDone }) {
   };
 
   const setFollowField = (field, value) => setFollow((f) => ({ ...f, [field]: value }));
+
+  // Participant type — persist immediately once a participant is named.
+  const setRole = (value) => {
+    setFollow((f) => {
+      const next = { ...f, role: value };
+      if (participant) saveFollowup(participant, next);
+      return next;
+    });
+  };
 
   const toggleDriver = (key) => {
     setFollow((f) => ({ ...f, drivers: f.drivers.includes(key) ? f.drivers.filter((d) => d !== key) : [...f.drivers, key] }));
@@ -164,9 +180,15 @@ export default function CaptureDial({ onDone }) {
             Set
           </button>
         </div>
-        <div style={{ fontSize: 12.5, color: theme.color.textMuted, marginTop: 8, lineHeight: 1.45 }}>
+
+        <div style={{ marginTop: 12 }}>
+          <FieldLabel>What kind of user are they?</FieldLabel>
+          <SegButton options={ROLES} value={follow.role} onChange={setRole} />
+        </div>
+
+        <div style={{ fontSize: 12.5, color: theme.color.textMuted, marginTop: 10, lineHeight: 1.45 }}>
           {participant
-            ? <>Capturing for <strong style={{ color: '#7A4DD0' }}>{participant}</strong>. Answers link to their session.</>
+            ? <>Capturing for <strong style={{ color: '#7A4DD0' }}>{participant}</strong>{follow.role ? ` · ${roleLabel(follow.role)}` : ''}. Answers link to their session.</>
             : 'Name them first so answers tie to what they do in the prototype.'}
         </div>
       </div>

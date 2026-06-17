@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import theme from '../theme';
 import Shell from '../components/Shell';
 import { getSessionData, resetSession, getAllSessions, clearAllSessions } from '../tracking/sessionTracker';
-import { useDialResponses, useFollowups, MOMENTS, DIAL_POSITIONS, DRIVERS, FOLLOWUP_QUESTIONS, WOULD_USE, FREQUENCY, EFFORT_WORTH, positionLabel, driverLabel } from '../store/dialStore';
+import { useDialResponses, useFollowups, MOMENTS, DIAL_POSITIONS, DRIVERS, FOLLOWUP_QUESTIONS, WOULD_USE, FREQUENCY, EFFORT_WORTH, positionLabel, driverLabel, roleLabel } from '../store/dialStore';
 
 // Colour per dial position, reused by the control-dial bars.
 const POSITION_COLOR = { less: '#2F7DC4', 'just-right': theme.color.success, more: '#7A4DD0' };
@@ -270,7 +270,7 @@ function VersioningBody({ followups }) {
           {whys.map((r) => (
             <div key={r.participant} style={{ fontSize: 14.5, color: theme.color.text, lineHeight: 1.5, paddingLeft: 12, borderLeft: '3px solid #CDB8F0' }}>
               “{r.versioningWhy}”
-              <span style={{ color: theme.color.textSubtle }}> · {r.participant || 'anon'}</span>
+              <span style={{ color: theme.color.textSubtle }}> · {r.participant || 'anon'}{r.role ? ` (${roleLabel(r.role)})` : ''}</span>
             </div>
           ))}
         </div>

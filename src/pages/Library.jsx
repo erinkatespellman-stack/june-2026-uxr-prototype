@@ -589,7 +589,7 @@ export default function Library() {
           </div>
 
           {/* Pre-Arrival Communications */}
-          <AccordionSection title="Pre-Arrival Communications" defaultOpen>
+          <AccordionSection title="Pre-Arrival Communications">
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20, maxWidth: 900 }}>
               <ChannelCard title="Email" thumbnail={<EmailMiniThumb />} draftDate="April 16, 2026" publishedDate="April 16, 2026" ctaLabel="Manage Versions" onOpen={openEmail} onManage={openEmail} />
               <ChannelCard title="Travel Planner Form" thumbnail={<FormMiniThumb />} draftDate="March 30, 2026" publishedDate="March 30, 2026" ctaLabel="Manage" onOpen={() => trackClick('open_travel_planner_card')} onManage={() => trackClick('manage_travel_planner')} />
@@ -606,7 +606,7 @@ export default function Library() {
           </AccordionSection>
 
           {/* Dining — empty until amenities are discovered (screen A → screen 1) */}
-          <AccordionSection title="Dining" defaultOpen={dining.length > 0} empty={dining.length === 0}>
+          <AccordionSection title="Dining" defaultOpen empty={dining.length === 0}>
             <div style={featureGrid}>
               {dining.map((f) => (
                 <FeatureCard key={f.key} feature={f} isNew={f.brandMatch != null} />
@@ -614,7 +614,7 @@ export default function Library() {
             </div>
           </AccordionSection>
 
-          <AccordionSection title="Experiences" defaultOpen={experiences.length > 0} empty={experiences.length === 0}>
+          <AccordionSection title="Experiences" defaultOpen empty={experiences.length === 0}>
             <div style={featureGrid}>
               {experiences.map((f) => (
                 <FeatureCard key={f.key} feature={f} isNew={f.brandMatch != null} />
