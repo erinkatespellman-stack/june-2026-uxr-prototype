@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import theme from '../theme';
+import SegButton from './SegButton';
 import { setParticipant, getParticipant, getSessionId } from '../tracking/sessionTracker';
 import {
   MOMENTS,
@@ -24,38 +25,6 @@ import {
 // /research/console page and inside the slide-in Capture drawer, so a researcher
 // can record answers without leaving the participant's screen. Captures the dial
 // per AI moment plus the optional §5 follow-ups and §2 driver tags.
-
-function SegButton({ options, value, onChange }) {
-  return (
-    <div style={{ display: 'flex', flexWrap: 'wrap', background: '#F0F0F0', borderRadius: theme.radius.md, padding: 3, gap: 3 }}>
-      {options.map((o) => {
-        const active = value === o.key;
-        return (
-          <button
-            key={o.key}
-            type="button"
-            onClick={() => onChange(active ? null : o.key)}
-            style={{
-              flex: '1 1 auto',
-              border: 'none',
-              borderRadius: theme.radius.sm,
-              padding: '9px 14px',
-              fontSize: 14,
-              fontWeight: active ? 600 : 500,
-              cursor: 'pointer',
-              background: active ? theme.color.text : 'transparent',
-              color: active ? '#FFFFFF' : theme.color.textMuted,
-              transition: `all ${theme.motion.fast}`,
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {o.label}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
 
 function FieldLabel({ children }) {
   return <div style={{ fontSize: 13.5, fontWeight: 600, color: theme.color.text, marginBottom: 7 }}>{children}</div>;
